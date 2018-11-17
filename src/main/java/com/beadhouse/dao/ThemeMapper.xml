@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.ThemeMapper">
+  <resultMap id="BaseResultMap" type="com.beadhouse.domen.Theme">
+    <result column="logo" jdbcType="VARCHAR" property="logo" />
+    <result column="color" property="color" jdbcType="VARCHAR" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    logo, color
+  </sql>
+  
+   <select id="selectTheme" parameterType="com.beadhouse.domen.Theme" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from table_theme
+  </select>
+  
+</mapper>

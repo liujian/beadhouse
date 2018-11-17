@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.CollectionMapper">
+  <resultMap id="BaseResultMap" type="com.beadhouse.domen.Collection">
+    <id column="collectionid" property="collectionid" jdbcType="INTEGER" />
+    <result column="chatId" jdbcType="INTEGER" property="chatId" />
+    <result column="loginUserId" jdbcType="INTEGER" property="loginUserId" />
+    <result column="elderUserId" jdbcType="INTEGER" property="elderUserId" />
+    <result column="createDate" property="createDate" jdbcType="TIMESTAMP" />
+  </resultMap>
+
+  <sql id="Base_Column_List">
+    collectionid, chatId, loginUserId,createDate
+  </sql>
+  
+   <select id="selectCollection" parameterType="com.beadhouse.domen.Collection" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from table_collection
+    where chatId = #{chatId,jdbcType=INTEGER}
+    And loginUserId = #{loginUserId,jdbcType=INTEGER}
+  </select>
+
+ 
+  <insert id="insertCollection" parameterType="com.beadhouse.domen.Collection">
+      insert into 
+        table_collection (
+          chatId,
+          loginUserId,
+          createDate
+          )
+      values (
+      #{chatId,jdbcType=INTEGER},
+      #{loginUserId,jdbcType=INTEGER},
+      #{createDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+    <delete id="deleteCollection" parameterType="com.beadhouse.domen.Collection">
+     delete from
+        table_collection 
+         where
+          collectionid = #{collectionid,jdbcType=INTEGER}
+        AND
+          loginUserId = #{loginUserId,jdbcType=INTEGER}  
+  </delete>
+  
+   <delete id="delElderCollection" parameterType="com.beadhouse.domen.Collection">
+     delete from
+        table_collection 
+         where
+          collectionid = #{collectionid,jdbcType=INTEGER}
+        AND
+          elderUserId = #{elderUserId,jdbcType=INTEGER}  
+  </delete>
+  
+</mapper>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.ContactsMapper">
+  <resultMap id="BaseResultMap" type="com.beadhouse.domen.Contact">
+  
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="loginUserId" jdbcType="INTEGER" property="loginUserId" />
+    <result column="elderUserId" jdbcType="INTEGER" property="elderUserId" />
+    <result column="createDate" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="createDate" property="createDate" jdbcType="TIMESTAMP" />
+    
+     
+  </resultMap>
+
+
+ <!--    <resultMap id="ContactAndName" type="com.beadhouse.domen.ContactAndName">
+        <result column="elderUserId" jdbcType="INTEGER" property="elderUserId" />
+        <result column="elderUserName" jdbcType="VARCHAR" property="elderUserName" />
+        <result column="elderUserEmail" jdbcType="VARCHAR" property="elderUserEmail" />
+        <result column="elderUserAge" jdbcType="INTEGER" property="elderUserAge" />
+    </resultMap> -->
+  <sql id="Base_Column_List">
+    loginUserId, elderUserId, createDate
+  </sql>
+  
+   <select id="selectBycontacts" parameterType="com.beadhouse.domen.Contact" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from Table_contacts
+    where loginUserId = #{loginUserId,jdbcType=INTEGER}
+    And elderUserId = #{elderUserId,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectByLoginUserId" parameterType="Integer" resultMap="BaseResultMap">
+    SELECT * FROM Table_contacts 
+       LEFT JOIN Table_elder_user
+        ON Table_contacts.elderUserId = Table_elder_user.elderUserId
+       LEFT JOIN Table_login_user 
+        ON Table_contacts.loginUserId = Table_login_user.id 
+    WHERE Table_contacts.loginUserId = #{loginUserId,jdbcType=INTEGER}
+  </select>
+  
+   <select id="selectByElderUserId" parameterType="Integer" resultMap="BaseResultMap">
+    SELECT * FROM Table_contacts 
+       LEFT JOIN Table_elder_user
+        ON Table_contacts.elderUserId = Table_elder_user.elderUserId
+       LEFT JOIN Table_login_user 
+        ON Table_contacts.loginUserId = Table_login_user.id 
+    WHERE Table_contacts.elderUserId = #{elderUserId,jdbcType=INTEGER}
+  </select>
+ 
+  <insert id="insertContact" parameterType="com.beadhouse.domen.Contact">
+      insert into 
+        Table_contacts (
+          loginUserId,
+          elderUserId,
+          createDate
+          )
+      values (
+      #{loginUserId,jdbcType=INTEGER},
+      #{elderUserId,jdbcType=INTEGER},
+      #{createDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+</mapper>

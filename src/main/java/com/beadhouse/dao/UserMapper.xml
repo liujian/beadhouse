@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.UserMapper">
+    <resultMap id="BaseResultMap" type="com.beadhouse.domen.User">
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="emailAddress" jdbcType="VARCHAR" property="emailAddress"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="firstName" jdbcType="VARCHAR" property="firstName"/>
+        <result column="lastName" jdbcType="VARCHAR" property="lastName"/>
+        <result column="phone" jdbcType="VARCHAR" property="phone"/>
+        <result column="birthday" jdbcType="VARCHAR" property="birthday"/>
+        <result column="token" jdbcType="VARCHAR" property="token"/>
+        <result column="createDate" property="createDate" jdbcType="TIMESTAMP"/>
+        <result column="updateDate" property="updateDate" jdbcType="TIMESTAMP"/>
+        <result column="userAvatar" jdbcType="VARCHAR" property="userAvatar"/>
+
+    </resultMap>
+    <sql id="Base_Column_List">
+    id,emailAddress, password, firstName, lastName, phone,birthday,token,createDate, updateDate,userAvatar
+  </sql>
+    <select id="selectByEmailAddress" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_login_user
+        where emailAddress = #{emailAddress,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectByToken" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_login_user
+        where token = #{token,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" parameterType="com.beadhouse.domen.User">
+      insert into 
+        Table_login_user (
+          emailAddress,
+          password,
+          firstName,
+          lastName,
+          phone,
+          birthday,
+          createDate,
+          updateDate
+          )
+      values (
+      #{emailAddress,jdbcType=VARCHAR},
+      #{password,jdbcType=VARCHAR},
+      #{firstName,jdbcType=VARCHAR},
+      #{lastName,jdbcType=VARCHAR},
+      #{phone,jdbcType=VARCHAR},
+      #{birthday,jdbcType=VARCHAR},
+      #{createDate,jdbcType=TIMESTAMP},
+      #{updateDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+
+    <update id="updateToken" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        token=#{token}
+        where
+        emailAddress=#{emailAddress}
+  </update>
+
+    <update id="updatePassword" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        password=#{password},
+        updateDate=#{updateDate}
+        where
+        token=#{token}
+  </update>
+
+    <update id="updateUserInfo" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        firstName=#{firstName},
+        lastName=#{lastName},
+        phone=#{phone},
+        birthday=#{birthday},
+        updateDate=#{updateDate}
+        where
+        token=#{token}
+  </update>
+
+    <update id="updateUserAvatar" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        userAvatar=#{userAvatar}
+        where
+        token=#{token}
+  </update>
+
+
+</mapper>

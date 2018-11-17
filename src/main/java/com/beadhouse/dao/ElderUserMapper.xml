@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.ElderUserMapper">
+    <resultMap id="BaseResultMap" type="com.beadhouse.domen.ElderUser">
+        <id column="elderUserId" jdbcType="INTEGER" property="elderUserId"/>
+        <result column="elderUserEmail" jdbcType="VARCHAR" property="elderUserEmail"/>
+        <result column="elderFirstName" jdbcType="VARCHAR" property="elderFirstName"/>
+        <result column="elderLastName" jdbcType="VARCHAR" property="elderLastName"/>
+        <result column="elderBirthday" jdbcType="VARCHAR" property="elderBirthday"/>
+        <result column="elderUserAge" jdbcType="INTEGER" property="elderUserAge"/>
+        <result column="elderUserAddress" jdbcType="VARCHAR" property="elderUserAddress"/>
+        <result column="elderUserPassword" jdbcType="VARCHAR" property="elderUserPassword"/>
+        <result column="elderUserPhone" jdbcType="VARCHAR" property="elderUserPhone"/>
+        <result column="elderUserOther" jdbcType="VARCHAR" property="elderUserOther"/>
+        <result column="createDate" property="createDate" jdbcType="TIMESTAMP"/>
+        <result column="createUser" property="createUser" jdbcType="VARCHAR"/>
+        <result column="modificationDate" property="modificationDate" jdbcType="TIMESTAMP"/>
+        <result column="modificationUser" property="modificationUser" jdbcType="VARCHAR"/>
+        <result column="token" jdbcType="VARCHAR" property="token"/>
+         <result column="elderAvatar" jdbcType="VARCHAR" property="elderAvatar"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+    elderUserId, elderUserEmail, elderFirstName,elderLastName,elderBirthday, elderUserAge, elderUserAddress, elderUserPassword, elderUserPhone, elderUserOther,createDate,createUser,modificationUser,modificationDate,token,elderAvatar
+  </sql>
+
+    <select id="selectByElderUserEmail" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_elder_user
+        where elderUserEmail = #{elderUserEmail,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectByToken" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_elder_user
+        where token = #{token,jdbcType=VARCHAR}
+    </select>
+
+    <insert id="insertElderUser" parameterType="com.beadhouse.domen.ElderUser">
+      insert into 
+        Table_elder_user (
+          elderUserEmail,
+          elderFirstName,
+          elderLastName,
+          elderBirthday,
+          elderUserAge,
+          elderUserAddress,
+          elderUserPassword,
+          elderUserphone,
+          elderUserOther,
+          createDate,
+          createUser,
+          modificationDate,
+          modificationUser,
+          token,
+           elderAvatar
+          )
+      values (
+      #{elderUserEmail,jdbcType=VARCHAR},
+      #{elderFirstName,jdbcType=VARCHAR},
+      #{elderLastName,jdbcType=VARCHAR},
+      #{elderBirthday,jdbcType=VARCHAR},
+      #{elderUserAge,jdbcType=INTEGER},
+      #{elderUserAddress,jdbcType=VARCHAR},
+      #{elderUserPassword,jdbcType=VARCHAR},
+      #{elderUserPhone,jdbcType=VARCHAR},
+      #{elderUserOther,jdbcType=VARCHAR},
+      #{createDate,jdbcType=TIMESTAMP},
+      #{createUser,jdbcType=TIMESTAMP},
+      #{modificationDate,jdbcType=TIMESTAMP},
+      #{modificationUser,jdbcType=VARCHAR},
+      #{token,jdbcType=VARCHAR},
+      #{elderAvatar,jdbcType=VARCHAR}
+      )
+  </insert>
+
+    <update id="updateUser" parameterType="com.beadhouse.domen.ElderUser">
+       UPDATE
+        Table_elder_user
+        SET
+        token=#{token}
+        where
+        elderUserEmail=#{elderUserEmail}
+  </update>
+  
+   <update id="updatePassword" parameterType="com.beadhouse.domen.ElderUser">
+       UPDATE
+        Table_elder_user
+        SET
+        elderUserPassword=#{elderUserPassword}
+        where
+        elderUserEmail=#{elderUserEmail}
+    </update>
+    
+    <update id="updateElderInfo" parameterType="com.beadhouse.domen.ElderUser">
+       UPDATE
+        Table_elder_user
+        SET
+        elderFirstName=#{elderFirstName},
+        elderLastName=#{elderLastName}, 
+        elderBirthday=#{elderBirthday},
+        elderUserPhone=#{elderUserPhone}
+        where
+        elderUserEmail=#{elderUserEmail}
+    </update>
+    
+    <update id="updateElderAvatar" parameterType="com.beadhouse.domen.ElderUser">
+       UPDATE
+        Table_elder_user
+        SET
+        elderAvatar=#{elderAvatar}
+        where
+        elderUserEmail=#{elderUserEmail}
+    </update>
+    
+
+
+</mapper>

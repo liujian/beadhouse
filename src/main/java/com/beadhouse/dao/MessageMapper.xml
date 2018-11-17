@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.MessageMapper">
+    <resultMap id="BaseResultMap" type="com.beadhouse.out.ChatHistoryOut">
+        <id column="chatId" property="chatId" jdbcType="INTEGER"/>
+        <result column="loginUserId" jdbcType="INTEGER" property="loginUserId"/>
+        <result column="elderUserId" jdbcType="INTEGER" property="elderUserId"/>
+        <result column="questId" jdbcType="INTEGER" property="questId"/>
+        <result column="defineQuestId" jdbcType="INTEGER" property="defineQuestId"/>
+        <result column="quest" jdbcType="VARCHAR" property="quest"/>
+        <result column="userVoiceUrl" jdbcType="VARCHAR" property="userVoiceUrl"/>
+        <result column="voicequest" jdbcType="VARCHAR" property="voicequest"/>
+        <result column="questDate" jdbcType="TIMESTAMP" property="questDate"/>
+        <result column="elderUserResponse" jdbcType="VARCHAR" property="elderUserResponse"/>
+        <result column="elderUserVoiceUrl" property="elderUserVoiceUrl" jdbcType="VARCHAR"/>
+        <result column="responseDate" property="responseDate" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <insert id="insertChatHistory" parameterType="com.beadhouse.domen.ChatHistory">
+      insert into 
+        Table_Chat_History (
+          loginUserId,
+          elderUserId,
+          questId,
+          defineQuestId,
+          quest,
+          userVoiceUrl,
+          voicequest,
+          questDate
+          )
+      values (
+      #{loginUserId,jdbcType=INTEGER},
+      #{elderUserId,jdbcType=INTEGER},
+      #{questId,jdbcType=INTEGER},
+      #{defineQuestId,jdbcType=INTEGER},
+      #{quest,jdbcType=VARCHAR},
+      #{userVoiceUrl,jdbcType=VARCHAR},
+      #{voicequest,jdbcType=VARCHAR},
+      #{questDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  
+     <resultMap id="ResultMap" type="com.beadhouse.domen.ChatHistory">
+        <id column="chatId" property="chatId" jdbcType="INTEGER"/>
+        <result column="loginUserId" jdbcType="INTEGER" property="loginUserId"/>
+        <result column="elderUserId" jdbcType="INTEGER" property="elderUserId"/>
+        <result column="questId" jdbcType="INTEGER" property="questId"/>
+        <result column="defineQuestId" jdbcType="INTEGER" property="defineQuestId"/>
+        <result column="quest" jdbcType="VARCHAR" property="quest"/>
+        <result column="userVoiceUrl" jdbcType="VARCHAR" property="userVoiceUrl"/>
+        <result column="voicequest" jdbcType="VARCHAR" property="voicequest"/>
+        <result column="questDate" jdbcType="TIMESTAMP" property="questDate"/>
+        <result column="elderUserResponse" jdbcType="VARCHAR" property="elderUserResponse"/>
+        <result column="elderUserVoiceUrl" property="elderUserVoiceUrl" jdbcType="VARCHAR"/>
+        <result column="responseDate" property="responseDate" jdbcType="TIMESTAMP"/>
+        
+    </resultMap>
+  
+   <select id="selectChatByChatid" parameterType="Integer" resultMap="ResultMap">
+        SELECT
+            *      
+              FROM
+	         Table_chat_history
+	      Where
+	        chatId=#{chatId}   
+       
+    </select>
+    
+     <select id="getwaitquests" parameterType="com.beadhouse.domen.ChatHistory" resultMap="ResultMap">
+        SELECT
+            *      
+              FROM
+	         Table_chat_history
+	           LEFT JOIN Table_login_user 
+              ON 
+               Table_login_user.Id = Table_chat_history.loginUserId
+            LEFT JOIN Table_elder_user
+              ON
+               Table_elder_user.elderUserId=Table_chat_history.elderUserId   
+	      Where
+	        Table_chat_history.elderUserId=#{elderUserId}  
+	      AND
+	       (Table_chat_history.elderUserResponse is null or Table_chat_history.elderUserResponse ='')
+	      order by questDate   
+	       
+    </select>
+    
+
+    <select id="selectChatHistory" parameterType="com.beadhouse.in.GetMessageParam" resultMap="BaseResultMap">
+        SELECT
+	          *        
+	           
+          FROM
+	         Table_chat_history
+            LEFT JOIN Table_login_user 
+              ON 
+               Table_login_user.Id = Table_chat_history.loginUserId
+            LEFT JOIN Table_elder_user
+              ON
+               Table_elder_user.elderUserId=Table_chat_history.elderUserId      
+            LEFT JOIN table_collection 
+              ON table_collection.chatId = Table_chat_history.chatId 
+              AND table_collection.loginUserId=#{loginUserId,jdbcType=INTEGER}
+         WHERE
+	        Table_chat_history.elderUserId = #{elderUserId,jdbcType=INTEGER} 
+	       <if test="search != null and  search != ''">
+             <![CDATA[ and (Table_chat_history.quest like concat('%',#{search},'%') or Table_chat_history.elderUserResponse like concat('%',#{search},'%'))]]>
+           </if> 
+            <if test="isCollection==1">
+              and Table_chat_history.chatid
+                  in (select chatid from table_collection where table_collection.loginUserId=#{loginUserId,jdbcType=INTEGER} )
+              
+           </if>
+	         
+	      ORDER BY Table_chat_history.chatId DESC  
+    </select>
+    
+     <select id="selectElderChatHistory" parameterType="com.beadhouse.in.GetMessageParam" resultMap="BaseResultMap">
+        SELECT
+	          *        
+	           
+          FROM
+	         Table_chat_history
+            LEFT JOIN Table_login_user 
+              ON 
+               Table_login_user.Id = Table_chat_history.loginUserId
+            LEFT JOIN Table_elder_user
+              ON
+               Table_elder_user.elderUserId=Table_chat_history.elderUserId      
+            LEFT JOIN table_collection 
+              ON table_collection.chatId = Table_chat_history.chatId 
+              AND table_collection.elderUserId=#{elderUserId,jdbcType=INTEGER}
+         WHERE
+	        Table_chat_history.elderUserId = #{elderUserId,jdbcType=INTEGER} 
+	       <if test="search != null and  search != ''">
+             <![CDATA[ and (Table_chat_history.quest like concat('%',#{search},'%') or Table_chat_history.elderUserResponse like concat('%',#{search},'%'))]]>
+           </if> 
+            <if test="isCollection==1">
+              and Table_chat_history.chatid
+                  in (select chatid from table_collection where table_collection.elderUserId=#{elderUserId,jdbcType=INTEGER} )
+              
+           </if>
+	         
+	      ORDER BY Table_chat_history.chatId DESC  
+    </select>
+
+    <update id="updateAnswer" parameterType="com.beadhouse.domen.ChatHistory">
+       UPDATE
+        Table_chat_history
+        SET
+        elderUserResponse=#{elderUserResponse},
+        elderUserVoiceUrl=#{elderUserVoiceUrl},
+        responseDate=#{responseDate}
+        where
+        chatId=#{chatId}
+  </update>
+  
+   <update id="updatechat" parameterType="com.beadhouse.domen.ChatHistory">
+       UPDATE
+        Table_chat_history
+        SET
+        elderUserResponse=#{elderUserResponse},
+        voicequest=#{voicequest}
+        where
+        chatId=#{chatId}
+  </update>
+  
+  
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.QuestMapper">
+    <resultMap id="BaseResultMap" type="com.beadhouse.domen.Quest">
+        <result column="questId" jdbcType="INTEGER" property="questId"/>
+        <result column="quest" jdbcType="VARCHAR" property="quest"/>
+        <result column="sort" jdbcType="INTEGER" property="sort"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    questId, quest, sort
+  </sql>
+    <select id="getquestlist" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_quest_list
+        order by sort
+    </select>
+
+    <select id="getQuest" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select *
+    from Table_quest_list where questId = #{questId,jdbcType=INTEGER}
+  </select>
+
+    <insert id="insertContact" parameterType="com.beadhouse.domen.Quest">
+      insert into 
+        Table_quest_list (
+          quest, 
+          sort 
+          )
+      values (
+      #{quest,jdbcType=VARCHAR},
+      #{sort,jdbcType=INTEGER}
+      )
+  </insert>
+
+    <insert id="insertDefineQuest" useGeneratedKeys="true" keyProperty="defineQuestId"
+            parameterType="com.beadhouse.domen.DefineQuest">
+      insert into
+        table_define_quest (
+          defineQuest,
+          createUserId,
+          createDate
+          )
+      values (
+      #{defineQuest,jdbcType=VARCHAR},
+      #{createUserId,jdbcType=INTEGER},
+      #{createDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+
+
+</mapper>
