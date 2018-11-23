@@ -11,9 +11,10 @@ import java.io.InputStreamReader;
  */
 public class test {
     public static void main( String[] args ) {
-    	// String back=execCMD("net use \\\\192.168.200.72\\ipc$ 111111/Administrator");
-    	 
-    //	String a = execCMD("netstat -e -m \\\\192.168.200.72");
+    	 String a=execCMD("net use \\\\192.168.200.184\\ipc$ Qrst@2018/Administrator");
+    	 System.out.println(a);
+    	String back = execCMD("netstat -e");
+    	   System.out.println("back:"+back);
      //   String as=execCMD("ipconfig");
 
 //        String command1="shutdown -m \\192.168.1.195 -r";
@@ -31,9 +32,17 @@ public class test {
 //        } catch (IOException e) {
 //            e.printStackTrace();
 //        }
-    	String back=execCMD("netstat -e");
-        System.out.println("back:"+back);
-    //    System.out.println("as:"+a);
+//    	String back=execCMD("netstat -e");
+    	String[] arr = back.split("\\s+");
+     
+        for(String ss : arr){
+            System.out.println("ss:"+ss);
+        }
+        
+        Long count=Long.parseLong(arr[4])+Long.parseLong(arr[5]);
+//        String a=add(arr[4],arr[5]);
+        System.out.println("带宽："+arr[3]+" "+count+"：：");
+//        System.out.println("as:"+a);
 
     }
 
@@ -52,5 +61,6 @@ public class test {
         }
         return sb.toString();
     }
+    
 
 }

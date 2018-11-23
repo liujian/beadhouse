@@ -343,7 +343,8 @@ public class AWSClient {
             File file = new File("D:\\lll.mp3");
             InputStream is = new FileInputStream(file);
             FileUtils.copyInputStreamToFile(is, scratchFile);
-            uploadFileToBucket(file, scratchFile.getName(), "liujianliu");
+         String  uploadFileName = uploadFileToBucket(file, scratchFile.getName(), "liujianliu");
+         System.out.println(":::::::::::"+uploadFileName);
             // listBuckets();
 
         } catch (Exception e) {

@@ -24,8 +24,11 @@ import com.beadhouse.in.SendMessageParam;
 import com.beadhouse.in.UpdateChatParam;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.service.SendMessageService;
+import com.beadhouse.service.impl.ElderServiceImpl;
 import com.beadhouse.utils.UploadUtil;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 public class MessageController {
@@ -46,6 +49,9 @@ public class MessageController {
 
     @Autowired
     SendMessageService sendMessageService;
+    
+	private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
+
 
     /**
      * 发送消息
@@ -59,6 +65,7 @@ public class MessageController {
         if(param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), SendMessageParam.class);
         //上传文件至aws
         MultipartFile file = UploadUtil.getFile(request);
+        
         String uploadFileName = null;
         String fileText = null;
         File scratchFile=null;
@@ -80,14 +87,17 @@ public class MessageController {
                         fileText = GoogleSpeechUtil.translateAudio(audioFile);
                     }
                 }
-                
+                logger.info("fileText-------"+fileText);
                 //上传文件至亚马逊
+                logger.info("start aws uploadFileToBucket");
                 AWSClient.init_with_key(AWS_ACCESS_KEY, AWS_SECRET_KEY, regionName);
                 uploadFileName = AWSClient.uploadFileToBucket(scratchFile, AWSClient.getFileName() + suffic, bucketName);
+                if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } finally {
+            	 logger.info("uploadFileName-------"+uploadFileName);
                 if (scratchFile != null &&scratchFile.exists()) {
                     scratchFile.delete();
                 }

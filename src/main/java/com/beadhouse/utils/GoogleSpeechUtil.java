@@ -18,7 +18,7 @@ public class GoogleSpeechUtil {
     public static void main(String... args) throws Exception {
       String str = translateAudio(new File("D:\\scratchFile\\20181031102523041800.amr"));
       
-      System.out.println(str);
+      System.out.println("测试语音转文字："+str);
     }
 
     public static String translateAudio(File file) throws Exception {

@@ -250,7 +250,7 @@ public class ElderController {
      }
 
      /**
-      * 发送验证码至用户邮箱
+      * 获取等待回答问题
       * @param param
       * @param request
       * @return

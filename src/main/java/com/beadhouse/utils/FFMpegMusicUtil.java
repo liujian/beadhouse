@@ -17,7 +17,7 @@ public class FFMpegMusicUtil {
     private static String MUSIC_ADDRESS;
 
     public static void main(String... args) throws Exception {
-        videoToAudio("D:\\cesi.mp4","cesi.amr");
+        videoToAudio("D:\\liuj.mp4","liuj.amr");
     }
 
     /**

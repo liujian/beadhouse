@@ -3,6 +3,8 @@ package com.beadhouse.service.impl;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.beadhouse.controller.MessageController;
 import com.beadhouse.dao.CollectionMapper;
 import com.beadhouse.dao.ElderUserMapper;
 import com.beadhouse.dao.QuestMapper;
@@ -15,6 +17,9 @@ import com.beadhouse.in.GetMessageParam;
 import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.out.ChatHistoryOutList;
 import com.beadhouse.redis.RedisService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -45,10 +50,12 @@ public class SendMessageServiceImpl implements SendMessageService {
     @Value("${aws.SERVER_IMAGE}")
     private String SERVER_IMAGE;
 
+    private static final Logger logger = LoggerFactory.getLogger(SendMessageServiceImpl.class);
+    
     @Override
     @Transactional
     public BasicData sendMessage(SendMessageParam param, String fileName,String fileText) {
-        System.out.println(param.getToken());
+    	logger.info(param.getToken());
         User user = userMapper.selectByToken(param.getToken());
         if (user == null) {
             return BasicData.CreateErrorInvalidUser();

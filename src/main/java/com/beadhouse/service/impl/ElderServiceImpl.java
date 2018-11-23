@@ -3,6 +3,8 @@ package com.beadhouse.service.impl;
 import java.util.Date;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -43,6 +45,8 @@ public class ElderServiceImpl implements ElderService {
 	
 	@Value("${aws.SERVER_IMAGE}")
     private String SERVER_IMAGE;
+	
+	private static final Logger logger = LoggerFactory.getLogger(ElderServiceImpl.class);
 	
 	@Override
 	public BasicData registration(ElderRegistrationParam param) {
@@ -240,15 +244,22 @@ public class ElderServiceImpl implements ElderService {
 	public BasicData getElderCode(TokenParam param) {
 		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
-        String code=getcode();
-        String eldercode="eldercode"+code;
-        redisService.set(eldercode, elderUser.getElderUserEmail(), expiry);
+        String code =null;
+        if(redisService.exists("elderbindemail"+elderUser.getElderUserEmail())){
+           code =(String) redisService.getObj("elderbindemail"+elderUser.getElderUserEmail());
+       }else{
+    	   code=getcode();
+           String eldercode="elderbindcode"+code;
+           redisService.set("elderbindemail"+elderUser.getElderUserEmail(),code, expiry);
+           redisService.set(eldercode, elderUser.getElderUserEmail(), expiry);
+       }
+       
 		return BasicData.CreateSucess(code);
 	}
 	
 	private String getcode(){
 	    String code=Utils.getRandNum(6);
-        String eldercode="eldercode"+code;
+        String eldercode="elderbindcode"+code;
         if(redisService.exists(eldercode)){
         	getcode();
         }
@@ -296,7 +307,6 @@ public class ElderServiceImpl implements ElderService {
         ChatHistory chatHistory =new ChatHistory();
         chatHistory.setElderUserId(elderUser.getElderUserId());
         List<ChatHistoryOut> list= messageMapper.getwaitquests(chatHistory);
-
 		return BasicData.CreateSucess(list);
 	}
 

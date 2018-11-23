@@ -130,7 +130,7 @@ public class UserServiceImpl implements UserService {
         if (param.getCode() == null || param.getCode().isEmpty()) {
             return BasicData.CreateErrorMsg("Code is empty");
         }
-        String eldercode="eldercode"+param.getCode();
+        String eldercode="elderbindcode"+param.getCode();
         if(!redisService.exists(eldercode)){
         	 return BasicData.CreateErrorMsg("The verification code is invalid");
         }
