@@ -6,11 +6,10 @@ import java.io.InputStream;
 import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+
 import com.beadhouse.in.AnswerQuestParam;
 import com.beadhouse.in.GetMessageParam;
-import com.beadhouse.utils.AWSClient;
-import com.beadhouse.utils.FFMpegMusicUtil;
-import com.beadhouse.utils.GoogleSpeechUtil;
+import com.beadhouse.utils.*;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,32 +24,20 @@ import com.beadhouse.in.UpdateChatParam;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.service.SendMessageService;
 import com.beadhouse.service.impl.ElderServiceImpl;
-import com.beadhouse.utils.UploadUtil;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RestController
 public class MessageController {
-    @Value("${aws.AWS_ACCESS_KEY}")
-    private String AWS_ACCESS_KEY;
 
-    @Value("${aws.AWS_SECRET_KEY}")
-    private String AWS_SECRET_KEY;
-
-    @Value("${aws.regionName}")
-    private String regionName;
-
-    @Value("${aws.bucketName}")
-    private String bucketName;
-    
-    @Value("${aws.prifix}")
+    @Value("${google.prifix}")
     private String prifix;
 
     @Autowired
     SendMessageService sendMessageService;
-    
-	private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
 
     /**
@@ -62,17 +49,17 @@ public class MessageController {
     @RequestMapping("sendMessage")
     @ResponseBody
     public BasicData sendMessage(SendMessageParam param, HttpServletRequest request) {
-        if(param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), SendMessageParam.class);
+        if (param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), SendMessageParam.class);
         //上传文件至aws
         MultipartFile file = UploadUtil.getFile(request);
-        
+
         String uploadFileName = null;
         String fileText = null;
-        File scratchFile=null;
+        File scratchFile = null;
         File audioFile = null;
         if (file != null) {
-        	 try {
-        	    String fileName = file.getOriginalFilename();
+            try {
+                String fileName = file.getOriginalFilename();
                 String suffic = fileName.substring(fileName.lastIndexOf("."));
                 scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));
                 InputStream inputStream = file.getInputStream();
@@ -87,27 +74,26 @@ public class MessageController {
                         fileText = GoogleSpeechUtil.translateAudio(audioFile);
                     }
                 }
-                logger.info("fileText-------"+fileText);
+                logger.info("fileText-------" + fileText);
                 //上传文件至亚马逊
-                logger.info("start aws uploadFileToBucket");
-                AWSClient.init_with_key(AWS_ACCESS_KEY, AWS_SECRET_KEY, regionName);
-                uploadFileName = AWSClient.uploadFileToBucket(scratchFile, AWSClient.getFileName() + suffic, bucketName);
+                logger.info("start google uploadFileToBucket");
+                uploadFileName = GoogleStorageUtil.uploadFile(file);
                 if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } finally {
-            	 logger.info("uploadFileName-------"+uploadFileName);
-                if (scratchFile != null &&scratchFile.exists()) {
+                logger.info("uploadFileName-------" + uploadFileName);
+                if (scratchFile != null && scratchFile.exists()) {
                     scratchFile.delete();
                 }
-                
+
                 if (audioFile != null && audioFile.exists()) {
                     audioFile.delete();
                 }
             }
         }
-        return sendMessageService.sendMessage(param, uploadFileName,fileText);
+        return sendMessageService.sendMessage(param, uploadFileName, fileText);
     }
 
     /**
@@ -119,10 +105,10 @@ public class MessageController {
      */
     @RequestMapping("getChatHistory")
     @ResponseBody
-    public BasicData getChatHistory(@Valid @RequestBody GetMessageParam param, HttpServletRequest request){
+    public BasicData getChatHistory(@Valid @RequestBody GetMessageParam param, HttpServletRequest request) {
         return sendMessageService.getChatHistory(param);
     }
-    
+
     /**
      * 获取老人端聊天记录
      *
@@ -132,21 +118,29 @@ public class MessageController {
      */
     @RequestMapping("elder/getChatHistory")
     @ResponseBody
-    public BasicData getElderChatHistory(@Valid @RequestBody GetMessageParam param, HttpServletRequest request){
+    public BasicData getElderChatHistory(@Valid @RequestBody GetMessageParam param, HttpServletRequest request) {
         return sendMessageService.getElderChatHistory(param);
     }
-    
-    
-    
-    
+
+
     /**
      * 修改聊天记录
      */
     @RequestMapping("updateChatHistory")
     @ResponseBody
-    public BasicData updateChatHistory(@Valid @RequestBody UpdateChatParam param, HttpServletRequest request){
-    	
+    public BasicData updateChatHistory(@Valid @RequestBody UpdateChatParam param, HttpServletRequest request) {
+
         return sendMessageService.updateChatHistory(param);
+    }
+
+    /**
+     * 老人修改聊天记录
+     */
+    @RequestMapping("elder/updateChatHistory")
+    @ResponseBody
+    public BasicData updateChatHistoryByElder(@Valid @RequestBody UpdateChatParam param, HttpServletRequest request) {
+
+        return sendMessageService.updateChatHistoryByElder(param);
     }
 
     /**
@@ -157,16 +151,17 @@ public class MessageController {
      */
     @RequestMapping("answerQuestion")
     @ResponseBody
-    public BasicData answerQuestion(AnswerQuestParam param, HttpServletRequest request){
-        if(param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), AnswerQuestParam.class);
+    public BasicData answerQuestion(AnswerQuestParam param, HttpServletRequest request) {
+        if (param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), AnswerQuestParam.class);
+        System.out.println("token = " + param.getToken());
         //上传文件至aws
         MultipartFile file = UploadUtil.getFile(request);
         String uploadFileName = null;
         String fileText = null;
-        File scratchFile= null;
+        File scratchFile = null;
         File audioFile = null;
         if (file != null) {
-        	 try {
+            try {
                 String fileName = file.getOriginalFilename();
                 String suffic = fileName.substring(fileName.lastIndexOf("."));
                 scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));
@@ -180,17 +175,16 @@ public class MessageController {
                     audioFile = new File(audioPath);
                     if (audioFile.exists()) {
                         fileText = GoogleSpeechUtil.translateAudio(audioFile);
+                        System.out.println(fileText);
                     }
                 }
-                AWSClient.init_with_key(AWS_ACCESS_KEY, AWS_SECRET_KEY, regionName);
-                System.out.println(AWSClient.getFileName());
-                uploadFileName = AWSClient.uploadFileToBucket(scratchFile, AWSClient.getFileName() + suffic, bucketName);
-
+                uploadFileName = GoogleStorageUtil.uploadFile(file);
+                if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             } finally {
-                if (scratchFile !=null&&scratchFile.exists()) {
+                if (scratchFile != null && scratchFile.exists()) {
                     scratchFile.delete();
                 }
                 if (audioFile != null && audioFile.exists()) {
@@ -200,6 +194,6 @@ public class MessageController {
         }
         return sendMessageService.answerQuestion(param, uploadFileName, fileText);
     }
-    
+
 
 }

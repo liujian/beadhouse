@@ -42,8 +42,12 @@ public interface SendMessageService {
 	  * 修改聊天记录
 	  */
 	 
-	 BasicData updateChatHistory(UpdateChatParam param); 
-	 
-	
+	 BasicData updateChatHistory(UpdateChatParam param);
+
+	/**
+	 * 老人修改聊天记录
+	 */
+
+	BasicData updateChatHistoryByElder(UpdateChatParam param);
 
 }

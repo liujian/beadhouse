@@ -34,12 +34,12 @@ public class CollectionServiceImpl implements CollectionService {
         collection.setChatId(chatId);
         collection.setLoginUserId(loginUserId);
         collection.setCreateDate(new Date());
-        Collection coll=collectionMapper.selectCollection(collection);
+        Collection coll=collectionMapper.selectCollectionByLoginUserId(collection);
         if(coll!=null){
         	return BasicData.CreateErrorMsg("The news has been collected！");
         }
         collectionMapper.insertCollection(collection);
-        Collection col=collectionMapper.selectCollection(collection);
+        Collection col=collectionMapper.selectCollectionByLoginUserId(collection);
 		return BasicData.CreateSucess(col);
 	}
 
@@ -67,12 +67,12 @@ public class CollectionServiceImpl implements CollectionService {
         collection.setChatId(chatId);
         collection.setElderUserId(elderUserid);
         collection.setCreateDate(new Date());
-        Collection coll=collectionMapper.selectCollection(collection);
+        Collection coll=collectionMapper.selectCollectionByElderUserId(collection);
         if(coll!=null){
         	return BasicData.CreateErrorMsg("The news has been collected！");
         }
         collectionMapper.insertCollection(collection);
-        Collection col=collectionMapper.selectCollection(collection);
+        Collection col=collectionMapper.selectCollectionByElderUserId(collection);
 		return BasicData.CreateSucess(col);
 	
 	}

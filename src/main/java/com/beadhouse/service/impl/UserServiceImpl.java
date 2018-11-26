@@ -33,7 +33,7 @@ public class UserServiceImpl implements UserService {
     private ElderUserMapper elderUserMapper;
     @Autowired
     private RedisService redisService;
-    @Value("${aws.SERVER_IMAGE}")
+    @Value("${google.SERVER_IMAGE}")
     private String SERVER_IMAGE;
 
     //private static Logger log = Logger.getLogger(UserServiceImpl.class);

@@ -33,52 +33,52 @@ import com.beadhouse.utils.Utils;
 @Service
 public class ElderServiceImpl implements ElderService {
 
-	@Autowired
+    @Autowired
     private ElderUserMapper elderUserMapper;
-	@Autowired
-	private RedisService redisService;
-	@Autowired
-	private ContactsMapper contactsMapper;
-	@Autowired
+    @Autowired
+    private RedisService redisService;
+    @Autowired
+    private ContactsMapper contactsMapper;
+    @Autowired
     private MessageMapper messageMapper;
-	
-	
-	@Value("${aws.SERVER_IMAGE}")
+
+
+    @Value("${google.SERVER_IMAGE}")
     private String SERVER_IMAGE;
-	
-	private static final Logger logger = LoggerFactory.getLogger(ElderServiceImpl.class);
-	
-	@Override
-	public BasicData registration(ElderRegistrationParam param) {
-		 if (param.getElderUserEmail() == null || param.getElderUserEmail().isEmpty()) {
-             return BasicData.CreateErrorMsg("Email address is empty");
-         }
-         if (param.getElderUserPassword() == null || param.getElderUserPassword().isEmpty()) {
-             return BasicData.CreateErrorMsg("Password is empty");
-         }
-         if (param.getElderFirstName() == null || param.getElderFirstName().isEmpty()) {
-             return BasicData.CreateErrorMsg("First name is empty");
-         }
-         if (param.getElderFirstName() == null || param.getElderFirstName().isEmpty()) {
-             return BasicData.CreateErrorMsg("Last name is empty");
-         }
-         if (param.getElderBirthday() == null || param.getElderBirthday().isEmpty()) {
-             return BasicData.CreateErrorMsg("Birthday is empty");
-         }
-         
-        String code =param.getCode();
-     	String emailAddress=param.getElderUserEmail();
-     	if(!redisService.exists(emailAddress)){
-     		return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
-     	}else if(!redisService.getObj(emailAddress).equals(code)){
-     		return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
-     	}
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(ElderServiceImpl.class);
+
+    @Override
+    public BasicData registration(ElderRegistrationParam param) {
+        if (param.getElderUserEmail() == null || param.getElderUserEmail().isEmpty()) {
+            return BasicData.CreateErrorMsg("Email address is empty");
+        }
+        if (param.getElderUserPassword() == null || param.getElderUserPassword().isEmpty()) {
+            return BasicData.CreateErrorMsg("Password is empty");
+        }
+        if (param.getElderFirstName() == null || param.getElderFirstName().isEmpty()) {
+            return BasicData.CreateErrorMsg("First name is empty");
+        }
+        if (param.getElderFirstName() == null || param.getElderFirstName().isEmpty()) {
+            return BasicData.CreateErrorMsg("Last name is empty");
+        }
+        if (param.getElderBirthday() == null || param.getElderBirthday().isEmpty()) {
+            return BasicData.CreateErrorMsg("Birthday is empty");
+        }
+
+        String code = param.getCode();
+        String emailAddress = param.getElderUserEmail();
+        if (!redisService.exists(emailAddress)) {
+            return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
+        } else if (!redisService.getObj(emailAddress).equals(code)) {
+            return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
+        }
+
         ElderUser elderuser = elderUserMapper.selectByElderUserEmail(param.getElderUserEmail());
         if (elderuser != null) {
             return BasicData.CreateErrorMsg("This account already exists!");
         }
-       
+
         elderuser = new ElderUser();
         elderuser.setElderUserEmail(param.getElderUserEmail());
         elderuser.setElderUserPassword(param.getElderUserPassword());
@@ -86,19 +86,19 @@ public class ElderServiceImpl implements ElderService {
         elderuser.setElderLastName(param.getElderLastName());
         elderuser.setElderBirthday(param.getElderBirthday());
         elderuser.setElderUserPhone(param.getElderUserphone());
-        elderuser.setElderAvatar(SERVER_IMAGE+param.getElderAvatar());
+        elderuser.setElderAvatar(SERVER_IMAGE + param.getElderAvatar());
         elderuser.setCreateDate(new Date());
         String token = Utils.getToken();
-        elderuser.setToken(token);		
+        elderuser.setToken(token);
         elderUserMapper.insertElderUser(elderuser);
-      
+
         return BasicData.CreateSucess(elderuser);
-	}
-	
-	
-	@Override
-	public BasicData elderUserLogin(LoginParam param) {
-		String elderUserEmail = param.getEmailAddress();
+    }
+
+
+    @Override
+    public BasicData elderUserLogin(LoginParam param) {
+        String elderUserEmail = param.getEmailAddress();
         String password = param.getPassword();
         if (elderUserEmail == null || password == null) {
             return BasicData.CreateErrorMsg("Email address is empty");
@@ -116,42 +116,42 @@ public class ElderServiceImpl implements ElderService {
         elderUserMapper.updateUser(elderUser);
 
         return BasicData.CreateSucess(elderUser);
-	}
+    }
 
-	@Override
-	public BasicData forgetPassword(NewPasswordParam param) {
-		if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
+    @Override
+    public BasicData forgetPassword(NewPasswordParam param) {
+        if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
             return BasicData.CreateErrorMsg("Email address is empty");
         }
         if (param.getNewPassword() == null || param.getNewPassword().isEmpty()) {
             return BasicData.CreateErrorMsg("NewPassword is empty");
         }
-        
+
         if (param.getCode() == null || param.getCode().isEmpty()) {
             return BasicData.CreateErrorMsg("Code is empty");
         }
-     	String code =param.getCode();
-   	    String emailAddress=param.getEmailAddress();
-     	if(!redisService.exists(emailAddress)){
-   		    return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
-   	    }else if(!redisService.getObj(emailAddress).equals(code)){
-   		    return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
-   	    }
-     	
- 	   ElderUser elderUser = elderUserMapper.selectByElderUserEmail(param.getEmailAddress());
-       if (elderUser == null) {
-           return BasicData.CreateErrorMsg("This account does not exist!");
-       }
-       elderUser.setElderUserPassword(param.getNewPassword());
-       elderUser.setModificationDate(new Date());
-       elderUserMapper.updatePassword(elderUser);
-       
-	 	 return BasicData.CreateSucess(elderUser);
-	}
+        String code = param.getCode();
+        String emailAddress = param.getEmailAddress();
+        if (!redisService.exists(emailAddress)) {
+            return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
+        } else if (!redisService.getObj(emailAddress).equals(code)) {
+            return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
+        }
 
-	@Override
-	public BasicData changePassword(ChangePasswordParam param) {
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        ElderUser elderUser = elderUserMapper.selectByElderUserEmail(param.getEmailAddress());
+        if (elderUser == null) {
+            return BasicData.CreateErrorMsg("This account does not exist!");
+        }
+        elderUser.setElderUserPassword(param.getNewPassword());
+        elderUser.setModificationDate(new Date());
+        elderUserMapper.updatePassword(elderUser);
+
+        return BasicData.CreateSucess(elderUser);
+    }
+
+    @Override
+    public BasicData changePassword(ChangePasswordParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
 
         String oldPassword = param.getOldPassword();
@@ -174,142 +174,143 @@ public class ElderServiceImpl implements ElderService {
         elderUserMapper.updatePassword(updateUser);
 
         return BasicData.CreateSucess();
-	}
+    }
 
-	@Override
-	public BasicData updateElderInfo(ElderInfoParam param) {
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
-	        if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+    @Override
+    public BasicData updateElderInfo(ElderInfoParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (elderUser == null) return BasicData.CreateErrorInvalidUser();
 
-	        String firstName = param.getElderFirstName();
-	        String lastName = param.getElderFirstName();
-	        String phone = param.getElderUserPhone();
-	        String birthday = param.getElderBirthday();
-	        if (firstName == null || firstName.isEmpty()) {
-	            return BasicData.CreateErrorMsg("The first name is empty");
-	        }
-	        if (lastName == null || lastName.isEmpty()) {
-	            return BasicData.CreateErrorMsg("The last name is empty");
-	        }
-	        if (phone == null || phone.isEmpty()) {
-	            return BasicData.CreateErrorMsg("The phone is empty");
-	        }
-	        if (birthday == null || birthday.isEmpty()) {
-	            return BasicData.CreateErrorMsg("The birthday is empty");
-	        }
+        String firstName = param.getElderFirstName();
+        String lastName = param.getElderFirstName();
+        String phone = param.getElderUserPhone();
+        String birthday = param.getElderBirthday();
+        if (firstName == null || firstName.isEmpty()) {
+            return BasicData.CreateErrorMsg("The first name is empty");
+        }
+        if (lastName == null || lastName.isEmpty()) {
+            return BasicData.CreateErrorMsg("The last name is empty");
+        }
+        if (phone == null || phone.isEmpty()) {
+            return BasicData.CreateErrorMsg("The phone is empty");
+        }
+        if (birthday == null || birthday.isEmpty()) {
+            return BasicData.CreateErrorMsg("The birthday is empty");
+        }
 
-	        
-	        elderUser.setElderFirstName(param.getElderFirstName());
-	        elderUser.setElderLastName(param.getElderLastName());
-	        elderUser.setElderUserPhone(param.getElderUserPhone());
-	        elderUser.setElderBirthday(param.getElderBirthday());
-	        elderUser.setModificationDate(new Date());
-	        elderUserMapper.updateElderInfo(elderUser);
 
-	        return BasicData.CreateSucess(elderUser);
-	}
+        elderUser.setElderFirstName(param.getElderFirstName());
+        elderUser.setElderLastName(param.getElderLastName());
+        elderUser.setElderUserPhone(param.getElderUserPhone());
+        elderUser.setElderBirthday(param.getElderBirthday());
+        elderUser.setModificationDate(new Date());
+        elderUserMapper.updateElderInfo(elderUser);
 
-	@Override
-	public BasicData getElderInfo(TokenParam param) {
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
-	     if (elderUser == null) return BasicData.CreateErrorInvalidUser();
-	     return BasicData.CreateSucess(elderUser);
-		
-	}
+        return BasicData.CreateSucess(elderUser);
+    }
 
-	@Override
-	public BasicData updateElderAvatar(TokenParam param, String filePath) {
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+    @Override
+    public BasicData getElderInfo(TokenParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+        return BasicData.CreateSucess(elderUser);
+
+    }
+
+    @Override
+    public BasicData updateElderAvatar(TokenParam param, String filePath) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
         elderUser.setElderAvatar(SERVER_IMAGE + filePath);
         elderUserMapper.updateElderAvatar(elderUser);
 
         return BasicData.CreateSucess(SERVER_IMAGE + filePath);
-	}
+    }
 
 
-	@Override
-	public BasicData getElderContacts(TokenParam param) {
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+    @Override
+    public BasicData getElderContacts(TokenParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
 
         List<Contact> list = contactsMapper.selectByElderUserId(elderUser.getElderUserId());
 
         return BasicData.CreateSucess(list);
-	}
+    }
 
-	 @Value("${redis.eldercodeexpiry}")
-	 private Long expiry;
-	@Override
-	public BasicData getElderCode(TokenParam param) {
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+    @Value("${redis.eldercodeexpiry}")
+    private Long expiry;
+
+    @Override
+    public BasicData getElderCode(TokenParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
-        String code =null;
-        if(redisService.exists("elderbindemail"+elderUser.getElderUserEmail())){
-           code =(String) redisService.getObj("elderbindemail"+elderUser.getElderUserEmail());
-       }else{
-    	   code=getcode();
-           String eldercode="elderbindcode"+code;
-           redisService.set("elderbindemail"+elderUser.getElderUserEmail(),code, expiry);
-           redisService.set(eldercode, elderUser.getElderUserEmail(), expiry);
-       }
-       
-		return BasicData.CreateSucess(code);
-	}
-	
-	private String getcode(){
-	    String code=Utils.getRandNum(6);
-        String eldercode="elderbindcode"+code;
-        if(redisService.exists(eldercode)){
-        	getcode();
+        String code = null;
+        if (redisService.exists("elderbindemail" + elderUser.getElderUserEmail())) {
+            code = (String) redisService.getObj("elderbindemail" + elderUser.getElderUserEmail());
+        } else {
+            code = getcode();
+            String eldercode = "elderbindcode" + code;
+            redisService.set("elderbindemail" + elderUser.getElderUserEmail(), code, expiry);
+            redisService.set(eldercode, elderUser.getElderUserEmail(), expiry);
         }
-        
+
+        return BasicData.CreateSucess(code);
+    }
+
+    private String getcode() {
+        String code = Utils.getRandNum(6);
+        String eldercode = "elderbindcode" + code;
+        if (redisService.exists(eldercode)) {
+            getcode();
+        }
+
         return code;
-	}
+    }
 
     @Autowired
     private JavaMailSender mailSender;
 
     @Value("${spring.mail.username}")
     private String sender;
-	@Override
-	public BasicData sendCode(ElderSendCodeParam param) {
-		
-		String token=param.getToken();
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+
+    @Override
+    public BasicData sendCode(ElderSendCodeParam param) {
+
+        String token = param.getToken();
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
-        String username=elderUser.getElderFirstName()+" "+elderUser.getElderLastName();
-		List<String> list =param.getList();
-		
-		for(String emailAddress:list){
-			//邮箱发送验证码
-			SimpleMailMessage message = new SimpleMailMessage();
-	        message.setFrom(sender);
-	        message.setTo(emailAddress); //自己给自己发送邮件
-	        message.setSubject("theme：Elderly homes, elderly binding code");
-	        String msg=username+" Elderly Invite you to bind his / her mailbox and bind code as "+param.getCode();
-	        message.setText(msg);
-	        System.out.println("Start sending mail！");
-	        System.out.println("Mailbox content："+msg);
-	        mailSender.send(message);
-	        System.out.println("Mail sent successfully！");
-		}
-		
-		return BasicData.CreateSucess();
-	}
+        String username = elderUser.getElderFirstName() + " " + elderUser.getElderLastName();
+        List<String> list = param.getList();
+
+        for (String emailAddress : list) {
+            //邮箱发送验证码
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(sender);
+            message.setTo(emailAddress); //自己给自己发送邮件
+            message.setSubject("theme：Elderly homes, elderly binding code");
+            String msg = username + " Elderly Invite you to bind his / her mailbox and bind code as " + param.getCode();
+            message.setText(msg);
+            System.out.println("Start sending mail！");
+            System.out.println("Mailbox content：" + msg);
+            mailSender.send(message);
+            System.out.println("Mail sent successfully！");
+        }
+
+        return BasicData.CreateSucess();
+    }
 
 
-	@Override
-	public BasicData getwaitquests(TokenParam param) {
-		String token=param.getToken();
-		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+    @Override
+    public BasicData getwaitquests(TokenParam param) {
+        String token = param.getToken();
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
-        ChatHistory chatHistory =new ChatHistory();
+        ChatHistory chatHistory = new ChatHistory();
         chatHistory.setElderUserId(elderUser.getElderUserId());
-        List<ChatHistoryOut> list= messageMapper.getwaitquests(chatHistory);
-		return BasicData.CreateSucess(list);
-	}
-
+        List<ChatHistoryOut> list = messageMapper.getwaitquests(chatHistory);
+        return BasicData.CreateSucess(list);
+    }
 
 
 }

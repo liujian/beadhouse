@@ -7,7 +7,9 @@ import com.beadhouse.domen.Collection;
 @Mapper
 public interface CollectionMapper {
 
-	Collection selectCollection(Collection collection);
+	Collection selectCollectionByLoginUserId(Collection collection);
+
+	Collection selectCollectionByElderUserId(Collection collection);
 	
 	void insertCollection(Collection collection); 
 	

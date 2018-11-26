@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.beadhouse.in.*;
-import com.beadhouse.utils.AWSClient;
+import com.beadhouse.utils.GoogleStorageUtil;
 import com.beadhouse.utils.UploadUtil;
 import com.google.gson.Gson;
 import org.apache.commons.io.FileUtils;
@@ -24,21 +24,7 @@ import java.io.InputStream;
 @RestController
 public class ElderController {
 
-    @Value("${aws.AWS_ACCESS_KEY}")
-    private String AWS_ACCESS_KEY;
 
-    @Value("${aws.AWS_SECRET_KEY}")
-    private String AWS_SECRET_KEY;
-
-    @Value("${aws.regionName}")
-    private String regionName;
-
-    @Value("${aws.bucketName}")
-    private String bucketName;
-
-    @Value("${aws.prifix}")
-    private String prifix;
-    
     @Autowired
     private ElderService elderService;
 
@@ -57,36 +43,22 @@ public class ElderController {
     @Transactional
     public BasicData registration(ElderRegistrationParam param, HttpServletRequest request){
     	 if(param.getElderUserEmail() == null) param = new Gson().fromJson(request.getParameter("json"), ElderRegistrationParam.class);
-        //上传头像至aws
+        //上传文件至google
         MultipartFile file = UploadUtil.getFile(request);
         String uploadFileName = null;
-        File scratchFile = null;
         if (file != null) {
-        	try {
-                String fileName = file.getOriginalFilename();
-                String suffic = fileName.substring(fileName.lastIndexOf("."));
-                scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));  
-                InputStream inputStream = file.getInputStream();
-                FileUtils.copyInputStreamToFile(inputStream, scratchFile);
-                AWSClient.init_with_key(AWS_ACCESS_KEY, AWS_SECRET_KEY, regionName);
-                uploadFileName = AWSClient.uploadFileToBucket(scratchFile, AWSClient.getFileName() + suffic, bucketName);
-                System.out.println(uploadFileName);
+            uploadFileName = GoogleStorageUtil.uploadFile(file);
+            if (uploadFileName == null) {
+                return BasicData.CreateErrorMsg("文件上传失败");
+            } else {
                 param.setElderAvatar(uploadFileName);
-                
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } finally {
-                if (scratchFile!=null&&scratchFile.exists()) {
-                    scratchFile.delete();
-                }
             }
         }
         return elderService.registration(param);
 
     }
-    
-    
+
+
     /**
      * 老人用户登陆
      *
@@ -103,9 +75,9 @@ public class ElderController {
         System.out.println("-------------------elderUserLogin------------------");
         return elderService.elderUserLogin(param);
     }
-    
-    
-    
+
+
+
     /**
      * 忘记密码
      *
@@ -122,7 +94,7 @@ public class ElderController {
 
         return elderService.forgetPassword(param);
     }
-    
+
 
     /**
      * 修改密码
@@ -177,33 +149,17 @@ public class ElderController {
      * @return
      * @throws Exception
      */
-   
+
     @RequestMapping("elder/updateElderAvatar")
     @ResponseBody
     public BasicData updateElderAvatar(TokenParam param, HttpServletRequest request){
         if(param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), TokenParam.class);
-        //上传文件至aws
+        //上传文件至google
         MultipartFile file = UploadUtil.getFile(request);
         String uploadFileName = null;
-        File scratchFile = null;
         if (file != null) {
-        	try {
-                String fileName = file.getOriginalFilename();
-                String suffic = fileName.substring(fileName.lastIndexOf("."));
-                scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));  
-                InputStream inputStream = file.getInputStream();
-                FileUtils.copyInputStreamToFile(inputStream, scratchFile);
-                AWSClient.init_with_key(AWS_ACCESS_KEY, AWS_SECRET_KEY, regionName);
-                uploadFileName = AWSClient.uploadFileToBucket(scratchFile, AWSClient.getFileName() + suffic, bucketName);
-                System.out.println(uploadFileName);
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } finally {
-                if (scratchFile!=null&&scratchFile.exists()) {
-                    scratchFile.delete();
-                }
-            }
+            uploadFileName = GoogleStorageUtil.uploadFile(file);
+            if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
         }
         return elderService.updateElderAvatar(param, uploadFileName);
     }
@@ -222,9 +178,9 @@ public class ElderController {
     public BasicData getElderContacts(@Valid @RequestBody TokenParam param, HttpServletRequest request){
         return elderService.getElderContacts(param);
     }
-   
+
    /**
-    * 获取老人端绑定码 
+    * 获取老人端绑定码
     * @param param
     * @param request
     * @return
@@ -235,7 +191,7 @@ public class ElderController {
     public BasicData getElderCode(@Valid @RequestBody TokenParam param, HttpServletRequest request){
         return elderService.getElderCode(param);
     }
-   
+
     /**
      * 发送验证码至用户邮箱
      * @param param
@@ -262,5 +218,5 @@ public class ElderController {
           return elderService.getwaitquests(param);
       }
 
-     
+
 }

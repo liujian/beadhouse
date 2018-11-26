@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.beadhouse.in.*;
-import com.beadhouse.utils.AWSClient;
+import com.beadhouse.utils.GoogleStorageUtil;
 import com.beadhouse.utils.UploadUtil;
 import com.beadhouse.utils.Utils;
 import com.google.gson.Gson;
@@ -25,24 +25,10 @@ import com.beadhouse.service.UserService;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 
 @RestController
 public class UserController {
-
-    @Value("${aws.AWS_ACCESS_KEY}")
-    private String AWS_ACCESS_KEY;
-
-    @Value("${aws.AWS_SECRET_KEY}")
-    private String AWS_SECRET_KEY;
-
-    @Value("${aws.regionName}")
-    private String regionName;
-
-    @Value("${aws.bucketName}")
-    private String bucketName;
 
     @Autowired
     private UserService userService;
@@ -60,27 +46,27 @@ public class UserController {
     @RequestMapping("registration")
     @ResponseBody
     @Transactional
-    public BasicData registration(@Valid @RequestBody RegistrationParam param, HttpServletRequest request){
+    public BasicData registration(@Valid @RequestBody RegistrationParam param, HttpServletRequest request) {
 
         return userService.registration(param);
     }
-    
+
     /**
      * 获取邮箱验证码
+     *
      * @param param
      * @return
      */
     @RequestMapping("getCode")
     @ResponseBody
-    public BasicData getCode(@Valid @RequestBody GetCodeParam param){
-    	BasicData result = new BasicData();
-		String code =Utils.getRandNum(6);
-		GetCodeResult data = new GetCodeResult();
-		data.setFlag(this.userService.sendCode(param,code));
-		result.setData(data);
-    	return result;
+    public BasicData getCode(@Valid @RequestBody GetCodeParam param) {
+        BasicData result = new BasicData();
+        String code = Utils.getRandNum(6);
+        GetCodeResult data = new GetCodeResult();
+        data.setFlag(this.userService.sendCode(param, code));
+        result.setData(data);
+        return result;
     }
-    
 
 
     /**
@@ -95,11 +81,11 @@ public class UserController {
     @RequestMapping("userLogin")
     @ResponseBody
     @Transactional
-    public BasicData userLogin(@Valid @RequestBody LoginParam param, HttpServletRequest request){
+    public BasicData userLogin(@Valid @RequestBody LoginParam param, HttpServletRequest request) {
 
         return userService.login(param);
     }
-    
+
     /**
      * 忘记密码
      *
@@ -112,11 +98,10 @@ public class UserController {
     @RequestMapping("forgetPassword")
     @ResponseBody
     @Transactional
-    public BasicData forgetPassword(@Valid @RequestBody NewPasswordParam param, HttpServletRequest request){
+    public BasicData forgetPassword(@Valid @RequestBody NewPasswordParam param, HttpServletRequest request) {
 
         return userService.forgetPassword(param);
     }
-    
 
 
     /**
@@ -131,7 +116,7 @@ public class UserController {
     @RequestMapping("bindingContacts")
     @ResponseBody
     @Transactional
-    public BasicData bindingContacts(@Valid @RequestBody ContactsParam param, HttpServletRequest request){
+    public BasicData bindingContacts(@Valid @RequestBody ContactsParam param, HttpServletRequest request) {
 
         return userService.bindingContacts(param);
     }
@@ -147,7 +132,7 @@ public class UserController {
     @RequestMapping("changePassword")
     @ResponseBody
     @Transactional
-    public BasicData changePassword(@Valid @RequestBody ChangePasswordParam param, HttpServletRequest request){
+    public BasicData changePassword(@Valid @RequestBody ChangePasswordParam param, HttpServletRequest request) {
         return userService.changePassword(param);
     }
 
@@ -162,7 +147,7 @@ public class UserController {
     @RequestMapping("updateUserInfo")
     @ResponseBody
     @Transactional
-    public BasicData updateUserInfo(@Valid @RequestBody UserInfoParam param, HttpServletRequest request){
+    public BasicData updateUserInfo(@Valid @RequestBody UserInfoParam param, HttpServletRequest request) {
         return userService.updateUserInfo(param);
     }
 
@@ -177,7 +162,7 @@ public class UserController {
     @RequestMapping("getUserInfo")
     @ResponseBody
     @Transactional
-    public BasicData getUserInfo(@Valid @RequestBody TokenParam param, HttpServletRequest request){
+    public BasicData getUserInfo(@Valid @RequestBody TokenParam param, HttpServletRequest request) {
         return userService.getUserInfo(param);
     }
 
@@ -189,34 +174,17 @@ public class UserController {
      * @return
      * @throws Exception
      */
-    @Value("${aws.prifix}")
-    private String prifix;
+
     @RequestMapping("updateUserAvatar")
     @ResponseBody
-    public BasicData updateUserAvatar(TokenParam param, HttpServletRequest request){
-        if(param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), TokenParam.class);
-        //上传文件至aws
+    public BasicData updateUserAvatar(TokenParam param, HttpServletRequest request) {
+        if (param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), TokenParam.class);
+        //上传文件至google
         MultipartFile file = UploadUtil.getFile(request);
         String uploadFileName = null;
-        File scratchFile = null;
         if (file != null) {
-        	try {
-                String fileName = file.getOriginalFilename();
-                String suffic = fileName.substring(fileName.lastIndexOf("."));
-                scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));  
-                InputStream inputStream = file.getInputStream();
-                FileUtils.copyInputStreamToFile(inputStream, scratchFile);
-                AWSClient.init_with_key(AWS_ACCESS_KEY, AWS_SECRET_KEY, regionName);
-                uploadFileName = AWSClient.uploadFileToBucket(scratchFile, AWSClient.getFileName() + suffic, bucketName);
-                System.out.println(uploadFileName);
-            } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            } finally {
-                if (scratchFile!=null&&scratchFile.exists()) {
-                    scratchFile.delete();
-                }
-            }
+            uploadFileName = GoogleStorageUtil.uploadFile(file);
+            if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
         }
         return userService.updateUserAvatar(param, uploadFileName);
     }
@@ -226,10 +194,10 @@ public class UserController {
      */
     @RequestMapping("checkToken")
     @ResponseBody
-    public BasicData checkToken(@RequestParam String token, HttpServletRequest request){
+    public BasicData checkToken(@RequestParam String token, HttpServletRequest request) {
 
         return BasicData.CreateErrorInvalidUser();
     }
-   
+
 
 }

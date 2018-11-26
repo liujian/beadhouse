@@ -10,16 +10,24 @@
   </resultMap>
 
   <sql id="Base_Column_List">
-    collectionid, chatId, loginUserId,createDate
+    collectionid, chatId, loginUserId,createDate,elderUserId
   </sql>
-  
-   <select id="selectCollection" parameterType="com.beadhouse.domen.Collection" resultMap="BaseResultMap">
-    select
-    <include refid="Base_Column_List" />
-    from table_collection
-    where chatId = #{chatId,jdbcType=INTEGER}
-    And loginUserId = #{loginUserId,jdbcType=INTEGER}
-  </select>
+
+    <select id="selectCollectionByLoginUserId" parameterType="com.beadhouse.domen.Collection" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from table_collection
+        where chatId = #{chatId,jdbcType=INTEGER}
+        And loginUserId = #{loginUserId,jdbcType=INTEGER}
+    </select>
+
+    <select id="selectCollectionByElderUserId" parameterType="com.beadhouse.domen.Collection" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from table_collection
+        where chatId = #{chatId,jdbcType=INTEGER}
+        And elderUserId = #{elderUserId,jdbcType=INTEGER}
+    </select>
 
  
   <insert id="insertCollection" parameterType="com.beadhouse.domen.Collection">
@@ -27,11 +35,13 @@
         table_collection (
           chatId,
           loginUserId,
+          elderUserId,
           createDate
           )
       values (
       #{chatId,jdbcType=INTEGER},
       #{loginUserId,jdbcType=INTEGER},
+      #{elderUserId,jdbcType=INTEGER},
       #{createDate,jdbcType=TIMESTAMP}
       )
   </insert>

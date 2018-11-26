@@ -47,20 +47,20 @@ public class SendMessageServiceImpl implements SendMessageService {
     private CollectionMapper collectionMapper;
     @Autowired
     private RedisService redisService;
-    @Value("${aws.SERVER_IMAGE}")
+    @Value("${google.SERVER_IMAGE}")
     private String SERVER_IMAGE;
 
     private static final Logger logger = LoggerFactory.getLogger(SendMessageServiceImpl.class);
-    
+
     @Override
     @Transactional
-    public BasicData sendMessage(SendMessageParam param, String fileName,String fileText) {
-    	logger.info(param.getToken());
+    public BasicData sendMessage(SendMessageParam param, String fileName, String fileText) {
+        logger.info(param.getToken());
         User user = userMapper.selectByToken(param.getToken());
         if (user == null) {
             return BasicData.CreateErrorInvalidUser();
         }
-       // if (fileName == null) return BasicData.CreateErrorMsg("文件上传失败");
+        // if (fileName == null) return BasicData.CreateErrorMsg("文件上传失败");
 
         ChatHistory chatHistory = new ChatHistory();
         chatHistory.setLoginUserId(user.getId());
@@ -79,135 +79,135 @@ public class SendMessageServiceImpl implements SendMessageService {
         }
         chatHistory.setVoicequest(fileText);
         chatHistory.setQuestDate(new Date());
-        chatHistory.setUserVoiceUrl(SERVER_IMAGE + fileName);
+        if (fileName != null) chatHistory.setUserVoiceUrl(SERVER_IMAGE + fileName);
         messageMapper.insertChatHistory(chatHistory);
         return BasicData.CreateSucess(chatHistory);
     }
-    
-    
+
+
     @Value("${redis.chatsexpiry}")
     private Long expiry;
+
     @Override
     public BasicData<ChatHistoryOutList> getChatHistory(GetMessageParam param) {
         System.out.println(param.getToken());
         User user = userMapper.selectByToken(param.getToken());
-      //  ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
-        if (user == null ) {
+        //  ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (user == null) {
             return BasicData.CreateErrorInvalidUser();
-        }       
-       
+        }
+
         param.setLoginUserId(user.getId());
-        Integer total=param.getTotal();
-        Integer page=param.getPage();
-      
-        if(0==total&&0==param.getIsCollection()){
-        	List<ChatHistoryOut> list = messageMapper.selectChatHistory(param);
-        	 redisService.set(param.getElderUserId()+"|"+param.getToken()+list.size(),list,expiry);
-        	 redisService.set(param.getElderUserId()+"|"+param.getToken()+list.size()+"size",list.size(),expiry);
-        	 total=list.size();
-        } 
-        if(0==total&&1==param.getIsCollection()){
-        	List<ChatHistoryOut> list = messageMapper.selectChatHistory(param);
-        	redisService.set(param.getElderUserId()+param.getToken()+list.size(),list,expiry);
-       	    redisService.set(param.getElderUserId()+param.getToken()+list.size()+"size",list.size(),expiry);
-       	    total=list.size();
+        Integer total = param.getTotal();
+        Integer page = param.getPage();
+
+        if (0 == total && 0 == param.getIsCollection()) {
+            List<ChatHistoryOut> list = messageMapper.selectChatHistory(param);
+            redisService.set(param.getElderUserId() + "|" + param.getToken() + list.size(), list, expiry);
+            redisService.set(param.getElderUserId() + "|" + param.getToken() + list.size() + "size", list.size(), expiry);
+            total = list.size();
         }
-        
-        String key=null;
-         if(1==param.getIsCollection()){
-        	  key=param.getElderUserId()+param.getToken()+total;
-         }else{
-        	  key=param.getElderUserId()+"|"+param.getToken()+total;
-         }
-        
-        if(!(redisService.exists(key)&&redisService.exists(key+"size"))){
-        	return BasicData.CreateErrorInvalidchat();
+        if (0 == total && 1 == param.getIsCollection()) {
+            List<ChatHistoryOut> list = messageMapper.selectChatHistory(param);
+            redisService.set(param.getElderUserId() + param.getToken() + list.size(), list, expiry);
+            redisService.set(param.getElderUserId() + param.getToken() + list.size() + "size", list.size(), expiry);
+            total = list.size();
         }
-        Integer totalsize=(Integer)redisService.getObj(key+"size");
-        Integer startpage=null;
-        Integer endpage=null;
-        List<ChatHistoryOut> list=new ArrayList<ChatHistoryOut>();
-        ChatHistoryOutList chatHistoryOutList=new ChatHistoryOutList();
+
+        String key = null;
+        if (1 == param.getIsCollection()) {
+            key = param.getElderUserId() + param.getToken() + total;
+        } else {
+            key = param.getElderUserId() + "|" + param.getToken() + total;
+        }
+
+        if (!(redisService.exists(key) && redisService.exists(key + "size"))) {
+            return BasicData.CreateErrorInvalidchat();
+        }
+        Integer totalsize = (Integer) redisService.getObj(key + "size");
+        Integer startpage = null;
+        Integer endpage = null;
+        List<ChatHistoryOut> list = new ArrayList<ChatHistoryOut>();
+        ChatHistoryOutList chatHistoryOutList = new ChatHistoryOutList();
         chatHistoryOutList.setTotal(total);
-        if(page*10>totalsize){
-        	chatHistoryOutList.setChatHistoryOuts(list);
-        	return BasicData.CreateSucess(chatHistoryOutList);
-        }else{
-        	startpage=page*10;
-        	endpage=page*10+10;
-        	if((page*10+10)>totalsize){
-        		endpage=totalsize;
-        	}
-         List<ChatHistoryOut> chatHistoryOuts = (List)redisService.getObj(key);
-         list=chatHistoryOuts.subList(startpage, endpage);
+        if (page * 10 > totalsize) {
+            chatHistoryOutList.setChatHistoryOuts(list);
+            return BasicData.CreateSucess(chatHistoryOutList);
+        } else {
+            startpage = page * 10;
+            endpage = page * 10 + 10;
+            if ((page * 10 + 10) > totalsize) {
+                endpage = totalsize;
+            }
+            List<ChatHistoryOut> chatHistoryOuts = (List) redisService.getObj(key);
+            list = chatHistoryOuts.subList(startpage, endpage);
         }
-       
+
         chatHistoryOutList.setChatHistoryOuts(list);
-       
+
         return BasicData.CreateSucess(chatHistoryOutList);
     }
-      
-    
+
+
     @Override
-	public BasicData<ChatHistoryOutList> getElderChatHistory(GetMessageParam param) {
-    	 ElderUser user = elderUserMapper.selectByToken(param.getToken());
-         if (user == null) {
-             return BasicData.CreateErrorInvalidUser();
-         }   
-	       
-	        param.setElderUserId(user.getElderUserId());
-	        Integer total=param.getTotal();
-	        Integer page=param.getPage();
-	      
-	        if(0==total&&0==param.getIsCollection()){
-	        	List<ChatHistoryOut> list = messageMapper.selectElderChatHistory(param);
-	        	 redisService.set(param.getElderUserId()+"|"+param.getToken()+list.size(),list,expiry);
-	        	 redisService.set(param.getElderUserId()+"|"+param.getToken()+list.size()+"size",list.size(),expiry);
-	        	 total=list.size();
-	        } 
-	        if(0==total&&1==param.getIsCollection()){
-	        	List<ChatHistoryOut> list = messageMapper.selectElderChatHistory(param);
-	        	redisService.set(param.getElderUserId()+param.getToken()+list.size(),list,expiry);
-	       	    redisService.set(param.getElderUserId()+param.getToken()+list.size()+"size",list.size(),expiry);
-	       	    total=list.size();
-	        }
-	        
-	        String key=null;
-	         if(1==param.getIsCollection()){
-	        	  key=param.getElderUserId()+param.getToken()+total;
-	         }else{
-	        	  key=param.getElderUserId()+"|"+param.getToken()+total;
-	         }
-	        
-	        if(!(redisService.exists(key)&&redisService.exists(key+"size"))){
-	        	return BasicData.CreateErrorInvalidchat();
-	        }
-	        Integer totalsize=(Integer)redisService.getObj(key+"size");
-	        Integer startpage=null;
-	        Integer endpage=null;
-	        List<ChatHistoryOut> list=new ArrayList<ChatHistoryOut>();
-	        ChatHistoryOutList chatHistoryOutList=new ChatHistoryOutList();
-	        chatHistoryOutList.setTotal(total);
-	        if(page*10>totalsize){
-	        	chatHistoryOutList.setChatHistoryOuts(list);
-	        	return BasicData.CreateSucess(chatHistoryOutList);
-	        }else{
-	        	startpage=page*10;
-	        	endpage=page*10+10;
-	        	if((page*10+10)>totalsize){
-	        		endpage=totalsize;
-	        	}
-	         List<ChatHistoryOut> chatHistoryOuts = (List)redisService.getObj(key);
-	         list=chatHistoryOuts.subList(startpage, endpage);
-	        }
-	       
-	        chatHistoryOutList.setChatHistoryOuts(list);
-	       
-	        return BasicData.CreateSucess(chatHistoryOutList);
-	}
-    
-    
-   
+    public BasicData<ChatHistoryOutList> getElderChatHistory(GetMessageParam param) {
+        ElderUser user = elderUserMapper.selectByToken(param.getToken());
+        if (user == null) {
+            return BasicData.CreateErrorInvalidUser();
+        }
+
+        param.setElderUserId(user.getElderUserId());
+        Integer total = param.getTotal();
+        Integer page = param.getPage();
+
+        if (0 == total && 0 == param.getIsCollection()) {
+            List<ChatHistoryOut> list = messageMapper.selectElderChatHistory(param);
+            redisService.set(param.getElderUserId() + "|" + param.getToken() + list.size(), list, expiry);
+            redisService.set(param.getElderUserId() + "|" + param.getToken() + list.size() + "size", list.size(), expiry);
+            total = list.size();
+        }
+        if (0 == total && 1 == param.getIsCollection()) {
+            List<ChatHistoryOut> list = messageMapper.selectElderChatHistory(param);
+            redisService.set(param.getElderUserId() + param.getToken() + list.size(), list, expiry);
+            redisService.set(param.getElderUserId() + param.getToken() + list.size() + "size", list.size(), expiry);
+            total = list.size();
+        }
+
+        String key = null;
+        if (1 == param.getIsCollection()) {
+            key = param.getElderUserId() + param.getToken() + total;
+        } else {
+            key = param.getElderUserId() + "|" + param.getToken() + total;
+        }
+
+        if (!(redisService.exists(key) && redisService.exists(key + "size"))) {
+            return BasicData.CreateErrorInvalidchat();
+        }
+        Integer totalsize = (Integer) redisService.getObj(key + "size");
+        Integer startpage = null;
+        Integer endpage = null;
+        List<ChatHistoryOut> list = new ArrayList<ChatHistoryOut>();
+        ChatHistoryOutList chatHistoryOutList = new ChatHistoryOutList();
+        chatHistoryOutList.setTotal(total);
+        if (page * 10 > totalsize) {
+            chatHistoryOutList.setChatHistoryOuts(list);
+            return BasicData.CreateSucess(chatHistoryOutList);
+        } else {
+            startpage = page * 10;
+            endpage = page * 10 + 10;
+            if ((page * 10 + 10) > totalsize) {
+                endpage = totalsize;
+            }
+            List<ChatHistoryOut> chatHistoryOuts = (List) redisService.getObj(key);
+            list = chatHistoryOuts.subList(startpage, endpage);
+        }
+
+        chatHistoryOutList.setChatHistoryOuts(list);
+
+        return BasicData.CreateSucess(chatHistoryOutList);
+    }
+
+
     @Override
     @Transactional
     public BasicData answerQuestion(AnswerQuestParam param, String fileName, String fileText) {
@@ -228,27 +228,40 @@ public class SendMessageServiceImpl implements SendMessageService {
     }
 
 
-	@Override
-	public BasicData updateChatHistory(UpdateChatParam param) {
-	    User user = userMapper.selectByToken(param.getToken());
-	    if (user == null ) {
+    @Override
+    public BasicData updateChatHistory(UpdateChatParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) {
             return BasicData.CreateErrorInvalidUser();
-        } 
-	    ChatHistory chat=messageMapper.selectChatByChatid(param.getChatid());
-	    if(chat!=null&&chat.getElderUserId().equals(param.getElderUserId())&&chat.getLoginUserId().equals(user.getId())){
-	    	chat.setVoicequest(param.getVoicequest());
-	    	chat.setElderUserResponse(param.getElderUserResponse());
-	    	messageMapper.updatechat(chat);
-	    }else{
-	    	return BasicData.CreateErrorMsg("You can only change the chat between yourself and the elderly!");
-	    }
-	    
-	    
-		return BasicData.CreateSucess(chat);
-	}
+        }
+        ChatHistory chat = messageMapper.selectChatByChatid(param.getChatid());
+        if (chat != null && chat.getElderUserId().equals(param.getElderUserId()) && chat.getLoginUserId().equals(user.getId())) {
+            chat.setVoicequest(param.getVoicequest());
+            chat.setElderUserResponse(param.getElderUserResponse());
+            messageMapper.updatechat(chat);
+        } else {
+            return BasicData.CreateErrorMsg("You can only change the chat between yourself and the elderly!");
+        }
+        return BasicData.CreateSucess(chat);
+    }
 
 
-	
+    @Override
+    public BasicData updateChatHistoryByElder(UpdateChatParam param) {
+        ElderUser user = elderUserMapper.selectByToken(param.getToken());
+        if (user == null) {
+            return BasicData.CreateErrorInvalidUser();
+        }
+        ChatHistory chat = messageMapper.selectChatByChatid(param.getChatid());
+        if (chat != null && chat.getElderUserId().equals(user.getElderUserId())) {
+            chat.setVoicequest(param.getVoicequest());
+            chat.setElderUserResponse(param.getElderUserResponse());
+            messageMapper.updatechat(chat);
+        } else {
+            return BasicData.CreateErrorMsg("You can only modify your own chat history!");
+        }
+        return BasicData.CreateSucess(chat);
+    }
 
 
 }
