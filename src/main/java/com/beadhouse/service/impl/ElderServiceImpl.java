@@ -1,8 +1,16 @@
 package com.beadhouse.service.impl;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import com.beadhouse.dao.*;
+import com.beadhouse.domen.*;
+import com.beadhouse.in.*;
+import com.beadhouse.utils.FireBaseUtil;
+import com.google.gson.Gson;
+import jdk.nashorn.internal.parser.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,19 +19,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
-import com.beadhouse.dao.ContactsMapper;
-import com.beadhouse.dao.ElderUserMapper;
-import com.beadhouse.dao.MessageMapper;
-import com.beadhouse.domen.ChatHistory;
-import com.beadhouse.domen.Contact;
-import com.beadhouse.domen.ElderUser;
-import com.beadhouse.in.ChangePasswordParam;
-import com.beadhouse.in.ElderInfoParam;
-import com.beadhouse.in.ElderRegistrationParam;
-import com.beadhouse.in.ElderSendCodeParam;
-import com.beadhouse.in.LoginParam;
-import com.beadhouse.in.NewPasswordParam;
-import com.beadhouse.in.TokenParam;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.redis.RedisService;
@@ -41,6 +36,10 @@ public class ElderServiceImpl implements ElderService {
     private ContactsMapper contactsMapper;
     @Autowired
     private MessageMapper messageMapper;
+    @Autowired
+    private UserMapper userMapper;
+    @Autowired
+    private ImageMapper imageMapper;
 
 
     @Value("${google.SERVER_IMAGE}")
@@ -90,6 +89,7 @@ public class ElderServiceImpl implements ElderService {
         elderuser.setCreateDate(new Date());
         String token = Utils.getToken();
         elderuser.setToken(token);
+        elderuser.setFireBaseToken(param.getFireBaseToken());
         elderUserMapper.insertElderUser(elderuser);
 
         return BasicData.CreateSucess(elderuser);
@@ -113,6 +113,7 @@ public class ElderServiceImpl implements ElderService {
         String token = Utils.getToken();
 
         elderUser.setToken(token);
+        elderUser.setFireBaseToken(param.getFireBaseToken());
         elderUserMapper.updateUser(elderUser);
 
         return BasicData.CreateSucess(elderUser);
@@ -166,12 +167,9 @@ public class ElderServiceImpl implements ElderService {
         if (!oldPassword.equals(elderUser.getElderUserPassword())) {
             return BasicData.CreateErrorMsg("The old password is wrong, please re-enter the old password!");
         }
-
-        ElderUser updateUser = new ElderUser();
-        updateUser.setToken(param.getToken());
-        updateUser.setElderUserPassword(param.getNewPassword());
-        updateUser.setModificationDate(new Date());
-        elderUserMapper.updatePassword(updateUser);
+        elderUser.setElderUserPassword(param.getNewPassword());
+        elderUser.setModificationDate(new Date());
+        elderUserMapper.updatePassword(elderUser);
 
         return BasicData.CreateSucess();
     }
@@ -310,6 +308,40 @@ public class ElderServiceImpl implements ElderService {
         chatHistory.setElderUserId(elderUser.getElderUserId());
         List<ChatHistoryOut> list = messageMapper.getwaitquests(chatHistory);
         return BasicData.CreateSucess(list);
+    }
+
+
+    @Override
+    public BasicData toAskMe(AskMeParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+        User loginUser = userMapper.selectById(param.getLoginUserId());
+        String error = "";
+        if (loginUser != null && loginUser.getFireBaseToken() != null) {
+            try {
+                String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + " wants you to ask a question";
+                FireBaseUtil.pushFCMNotification("1", new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
+                return BasicData.CreateSucess();
+            } catch (IOException e) {
+                System.out.println("e = " + e);
+                error = e.getMessage();
+            }
+        }
+        return BasicData.CreateErrorMsg(error);
+    }
+
+    @Override
+    public BasicData getScreenImage(TokenParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+        List<Image> imageList = new ArrayList<>();
+        List<Contact> contactList = contactsMapper.selectByElderUserId(elderUser.getElderUserId());
+        if (contactList.size() != 0) {
+            for (Contact contact : contactList) {
+                imageList.addAll(imageMapper.selectImageByLoginUserId(contact.getLoginUserId()));
+            }
+        }
+        return BasicData.CreateSucess(imageList);
     }
 
 

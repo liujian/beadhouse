@@ -25,6 +25,15 @@ public interface UserService {
      */
     BasicData login(LoginParam param);
 
+    /**
+     * 用户登录 (Google 和 facebook)
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData loginGoogleOrFacebook(GoogleAndFacebookParam param);
+
 
     /**
 	 * 发送验证码
@@ -88,4 +97,13 @@ public interface UserService {
      * @throws Exception
      */
     BasicData updateUserAvatar(TokenParam param, String filePath);
+
+    /**
+     * 上传老人屏保
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData uploadElderScreen(TokenParam param, String filePath);
 }

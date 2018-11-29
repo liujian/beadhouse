@@ -15,6 +15,7 @@ public class RedisService <T> {
 	
     @Autowired
     private RedisTemplate redisTemplate;
+
     @Resource(name = "redisTemplate")
     ValueOperations<Object, Object> valOpsObj;
 
@@ -54,6 +55,7 @@ public class RedisService <T> {
      * @return
      */
     public boolean exists(final String key) {
+        if (redisTemplate == null) return false;
         return redisTemplate.hasKey(key);
     }
 

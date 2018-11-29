@@ -17,6 +17,8 @@ public class RegistrationParam extends DeviceInfo {
 	private String birthday;
 	
 	private String code;
+
+	private String fireBaseToken;
 	
 
 	public String getEmailAddress() {
@@ -74,7 +76,12 @@ public class RegistrationParam extends DeviceInfo {
 	public void setCode(String code) {
 		this.code = code;
 	}
-	
-	
 
+	public String getFireBaseToken() {
+		return fireBaseToken;
+	}
+
+	public void setFireBaseToken(String fireBaseToken) {
+		this.fireBaseToken = fireBaseToken;
+	}
 }

@@ -1,16 +1,6 @@
 package com.beadhouse.service;
 
-import com.beadhouse.in.ChangePasswordParam;
-import com.beadhouse.in.ContactsParam;
-import com.beadhouse.in.ElderInfoParam;
-import com.beadhouse.in.ElderRegistrationParam;
-import com.beadhouse.in.ElderSendCodeParam;
-import com.beadhouse.in.GetCodeParam;
-import com.beadhouse.in.LoginParam;
-import com.beadhouse.in.NewPasswordParam;
-import com.beadhouse.in.RegistrationParam;
-import com.beadhouse.in.TokenParam;
-import com.beadhouse.in.UserInfoParam;
+import com.beadhouse.in.*;
 import com.beadhouse.out.BasicData;
 
 public interface ElderService {
@@ -100,6 +90,16 @@ public interface ElderService {
      * 获取老人等待回答的问题
      */
     BasicData getwaitquests(TokenParam param);
+
+    /**
+     * 老人求问题
+     */
+    BasicData toAskMe(AskMeParam param);
+
+    /**
+     * 老人求问题
+     */
+    BasicData getScreenImage(TokenParam param);
     
     
 }

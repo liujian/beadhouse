@@ -39,7 +39,13 @@ public class User implements Serializable{
 	
 	private Date updateDate;
 	private String userAvatar;
-	
+
+	private String fireBaseToken;
+
+	private String googleLoginId;
+
+	private String faceBookLoginId;
+
 	public Integer getId() {
 		return id;
 	}
@@ -104,5 +110,29 @@ public class User implements Serializable{
 
 	public void setUserAvatar(String userAvatar) {
 		this.userAvatar = userAvatar;
+	}
+
+	public String getFireBaseToken() {
+		return fireBaseToken;
+	}
+
+	public void setFireBaseToken(String fireBaseToken) {
+		this.fireBaseToken = fireBaseToken;
+	}
+
+	public String getGoogleLoginId() {
+		return googleLoginId;
+	}
+
+	public void setGoogleLoginId(String googleLoginId) {
+		this.googleLoginId = googleLoginId;
+	}
+
+	public String getFaceBookLoginId() {
+		return faceBookLoginId;
+	}
+
+	public void setFaceBookLoginId(String faceBookLoginId) {
+		this.faceBookLoginId = faceBookLoginId;
 	}
 }

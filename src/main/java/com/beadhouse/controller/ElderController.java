@@ -219,4 +219,35 @@ public class ElderController {
       }
 
 
+    /**
+     * 老人求问题
+     *
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("elder/toAskMe")
+    @ResponseBody
+    @Transactional
+    public BasicData toAskMe(@Valid @RequestBody AskMeParam param, HttpServletRequest request){
+        return elderService.toAskMe(param);
+    }
+
+    /**
+     * 获得
+     *
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("elder/getScreenImage")
+    @ResponseBody
+    @Transactional
+    public BasicData getScreenImage(@Valid @RequestBody TokenParam param, HttpServletRequest request){
+        return elderService.getScreenImage(param);
+    }
+
+
 }

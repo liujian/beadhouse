@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.ScheduleMapper">
+    <resultMap id="BaseScheduleMap" type="com.beadhouse.out.ScheduleOut">
+        <result column="scheduleId" jdbcType="INTEGER" property="scheduleId"/>
+        <result column="date" jdbcType="TIMESTAMP" property="date"/>
+        <result column="breakfast" jdbcType="VARCHAR" property="breakfast"/>
+        <result column="lunch" jdbcType="VARCHAR" property="lunch"/>
+        <result column="dinner" jdbcType="VARCHAR" property="dinner"/>
+        <collection property="activityList" ofType="com.beadhouse.domen.Activity" column="activityList" select="getActivityList"/>
+    </resultMap>
+
+    <resultMap id="BaseActivityMap" type="com.beadhouse.domen.Activity">
+        <result column="activityId" jdbcType="INTEGER" property="activityId"/>
+        <result column="activity" jdbcType="VARCHAR" property="activity"/>
+        <result column="scheduleId" jdbcType="INTEGER" property="scheduleId"/>
+    </resultMap>
+
+    <select id="getScheduleByDate" parameterType="Date" resultMap="BaseScheduleMap">
+        SELECT * FROM
+	        Table_schedule
+	      Where
+	        Table_schedule.date=#{date}
+    </select>
+
+    <select id="getActivityList" parameterType="Integer" resultType="com.beadhouse.domen.Activity">
+         SELECT * FROM Table_activity WHERE scheduleId=#{scheduleId}
+     </select>
+
+</mapper>

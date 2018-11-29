@@ -10,6 +10,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
@@ -31,19 +32,15 @@ public class FireBaseUtil {
     private static final String MESSAGING_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
     private static final String[] SCOPES = {MESSAGING_SCOPE};
 
-    private static final String TITLE = "FCM Notification";
-    private static final String BODY = "hello camile";
+    private static final String TITLE = "The Mapleton Assisted Living";
     public static final String MESSAGE_KEY = "message";
 
     public static void main(String[] args) {
-        JsonObject notificationMessage = buildNotificationMessage();
-        System.out.println("FCM request body for message using common notification object:");
-        prettyPrint(notificationMessage);
-        try {
-            pushFCMNotification(notificationMessage);
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
+//        try {
+//            pushFCMNotification("hello camile", "eQSkd0dzAEU:APA91bFgSEM_AkiVl3RPS9Trv-g34ed5R5aX-Rp055uESgbXhSDgrI1hi687sQ8UdM2IfezTDeT1aVQH2ylH5pgnKpTHspxoP0mste4r039R-3xf3WDNW2eWoM8u2Z6Sbpo-B4gDOL05");
+//        } catch (IOException e) {
+//            System.out.println("e = " + e);
+//        }
     }
 
     /**
@@ -61,19 +58,22 @@ public class FireBaseUtil {
      *
      * @return JSON of notification message.
      */
-    private static JsonObject buildNotificationMessage() {
+    private static JsonObject buildNotificationMessage(String type, String json, String body, String fireBaseToken) {
         JsonObject jNotification = new JsonObject();
         jNotification.addProperty("title", TITLE);
-        jNotification.addProperty("body", BODY);
+        jNotification.addProperty("body", body);
+        JsonObject jData = new JsonObject();
+        jData.addProperty("type", type);
+        jData.addProperty("json", json);
 
         JsonObject jMessage = new JsonObject();
         jMessage.add("notification", jNotification);
-//        jMessage.addProperty("topic", "notification");
-        jMessage.addProperty("token","dcTpiPEE5xQ:APA91bFCvDE4PBfeBLcjGAMQwjPzn-EakhCWkfgYq-oQFDOnelU-5ARkTDtL0M-OfI3OCWN-8smesZi7hMOcYqo143fOHhcz7vRxdwKmFRTR8i0wY3kpiiyeljUIG5hMGxcaJIBfF8cw");
+        jMessage.add("data", jData);
 
+        jMessage.addProperty("token", fireBaseToken);
         JsonObject jFcm = new JsonObject();
         jFcm.add(MESSAGE_KEY, jMessage);
-
+        prettyPrint(jFcm);
         return jFcm;
     }
 
@@ -87,7 +87,7 @@ public class FireBaseUtil {
     // [START retrieve_access_token]
     private static String getAccessToken() throws IOException {
         GoogleCredential googleCredential = GoogleCredential
-                .fromStream(new FileInputStream("D:\\family-217806-firebase-adminsdk-02g0j-066b629a66.json"))
+                .fromStream(new FileInputStream("D:\\file\\family-217806-firebase-adminsdk-02g0j-066b629a66.json"))
                 .createScoped(Arrays.asList(SCOPES));
         googleCredential.refreshToken();
         return googleCredential.getAccessToken();
@@ -110,7 +110,8 @@ public class FireBaseUtil {
         // [END use_access_token]
     }
 
-    public static void pushFCMNotification(JsonObject fcmMessage) throws IOException {
+    public static void pushFCMNotification(String type, String json, String body, String fireBaseToken) throws IOException {
+        JsonObject fcmMessage = buildNotificationMessage(type, json, body, fireBaseToken);
         HttpURLConnection connection = getConnection();
         connection.setDoOutput(true);
         DataOutputStream outputStream = new DataOutputStream(connection.getOutputStream());

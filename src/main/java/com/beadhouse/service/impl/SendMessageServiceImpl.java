@@ -1,5 +1,6 @@
 package com.beadhouse.service.impl;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -18,6 +19,8 @@ import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.out.ChatHistoryOutList;
 import com.beadhouse.redis.RedisService;
 
+import com.beadhouse.utils.FireBaseUtil;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +84,15 @@ public class SendMessageServiceImpl implements SendMessageService {
         chatHistory.setQuestDate(new Date());
         if (fileName != null) chatHistory.setUserVoiceUrl(SERVER_IMAGE + fileName);
         messageMapper.insertChatHistory(chatHistory);
+        ElderUser elderUser = elderUserMapper.selectById(param.getElderUserId());
+        try {
+            ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
+            String body = user.getFirstName() + " " + user.getLastName() + ":" + chatHistoryOut.getQuest();
+            FireBaseUtil.pushFCMNotification("2", new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
+            return BasicData.CreateSucess(chatHistory);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
         return BasicData.CreateSucess(chatHistory);
     }
 
@@ -211,8 +223,8 @@ public class SendMessageServiceImpl implements SendMessageService {
     @Override
     @Transactional
     public BasicData answerQuestion(AnswerQuestParam param, String fileName, String fileText) {
-        ElderUser user = elderUserMapper.selectByToken(param.getToken());
-        if (user == null) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (elderUser == null) {
             return BasicData.CreateErrorInvalidUser();
         }
 //        if (fileName == null) return BasicData.CreateErrorMsg("文件上传失败");
@@ -224,6 +236,17 @@ public class SendMessageServiceImpl implements SendMessageService {
         chatHistory.setElderUserVoiceUrl(SERVER_IMAGE + fileName);
         chatHistory.setElderUserResponse(fileText);
         messageMapper.updateAnswer(chatHistory);
+
+        ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
+
+        try {
+            String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + ":" + chatHistoryOut.getElderUserResponse();
+            FireBaseUtil.pushFCMNotification("3", new Gson().toJson(chatHistoryOut), body, userMapper.selectById(chatHistoryOut.getLoginUserId()).getFireBaseToken());
+            return BasicData.CreateSucess(chatHistory);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
+
         return BasicData.CreateSucess(chatHistory);
     }
 

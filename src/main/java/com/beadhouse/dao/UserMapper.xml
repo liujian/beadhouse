@@ -13,10 +13,12 @@
         <result column="createDate" property="createDate" jdbcType="TIMESTAMP"/>
         <result column="updateDate" property="updateDate" jdbcType="TIMESTAMP"/>
         <result column="userAvatar" jdbcType="VARCHAR" property="userAvatar"/>
-
+        <result column="fireBaseToken" jdbcType="VARCHAR" property="fireBaseToken"/>
+        <result column="googleLoginId" jdbcType="VARCHAR" property="googleLoginId"/>
+        <result column="faceBookLoginId" jdbcType="VARCHAR" property="faceBookLoginId"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id,emailAddress, password, firstName, lastName, phone,birthday,token,createDate, updateDate,userAvatar
+    id,emailAddress, password, firstName, lastName, phone,birthday,token,createDate, updateDate,userAvatar,fireBaseToken,googleLoginId,faceBookLoginId
   </sql>
     <select id="selectByEmailAddress" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
@@ -32,6 +34,27 @@
         where token = #{token,jdbcType=VARCHAR}
     </select>
 
+    <select id="selectByGoogleLoginId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_login_user
+        where googleLoginId = #{googleLoginId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectByFaceBookLoginId" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_login_user
+        where faceBookLoginId = #{faceBookLoginId,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_login_user
+        where id = #{loginUserId,jdbcType=INTEGER}
+    </select>
+
     <insert id="insertUser" useGeneratedKeys="true" keyProperty="id" parameterType="com.beadhouse.domen.User">
       insert into 
         Table_login_user (
@@ -42,7 +65,10 @@
           phone,
           birthday,
           createDate,
-          updateDate
+          updateDate,
+          fireBaseToken,
+          googleLoginId,
+          faceBookLoginId
           )
       values (
       #{emailAddress,jdbcType=VARCHAR},
@@ -52,17 +78,41 @@
       #{phone,jdbcType=VARCHAR},
       #{birthday,jdbcType=VARCHAR},
       #{createDate,jdbcType=TIMESTAMP},
-      #{updateDate,jdbcType=TIMESTAMP}
+      #{updateDate,jdbcType=TIMESTAMP},
+      #{fireBaseToken,jdbcType=VARCHAR},
+      #{googleLoginId,jdbcType=VARCHAR},
+      #{faceBookLoginId,jdbcType=VARCHAR}
       )
   </insert>
 
     <update id="updateToken" parameterType="com.beadhouse.domen.User">
-       UPDATE
-        Table_login_user
-        SET
-        token=#{token}
-        where
-        emailAddress=#{emailAddress}
+    UPDATE
+    Table_login_user
+    SET
+    token=#{token},
+    fireBaseToken=#{fireBaseToken}
+    where
+    emailAddress=#{emailAddress}
+  </update>
+
+    <update id="updateTokenByGoogleLoginId" parameterType="com.beadhouse.domen.User">
+    UPDATE
+    Table_login_user
+    SET
+    token=#{token},
+    fireBaseToken=#{fireBaseToken}
+    where
+    googleLoginId=#{googleLoginId}
+  </update>
+
+    <update id="updateTokenByFacebookLoginId" parameterType="com.beadhouse.domen.User">
+    UPDATE
+    Table_login_user
+    SET
+    token=#{token},
+    fireBaseToken=#{fireBaseToken}
+    where
+    faceBookLoginId=#{faceBookLoginId}
   </update>
 
     <update id="updatePassword" parameterType="com.beadhouse.domen.User">

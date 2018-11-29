@@ -1,7 +1,7 @@
 package com.beadhouse.out;
 
 public enum ErrorMsg {
-	E200("成功", 200), 
+	E200("Success", 200),
 	E400("服务器不理解请求的语法。", 400), 
 	E401("请求要求进行身份验证。", 401), 
 	E403("服务器拒绝请求。",403), 

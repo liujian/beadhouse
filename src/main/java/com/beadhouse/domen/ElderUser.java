@@ -41,6 +41,8 @@ public class ElderUser implements Serializable{
 	private String token;
 	
 	private String elderAvatar;
+
+	private String fireBaseToken;
 	
 
 	public String getElderFirstName() {
@@ -172,6 +174,12 @@ public class ElderUser implements Serializable{
 	public void setToken(String token) {
 		this.token = token;
 	}
-	
 
+	public String getFireBaseToken() {
+		return fireBaseToken;
+	}
+
+	public void setFireBaseToken(String fireBaseToken) {
+		this.fireBaseToken = fireBaseToken;
+	}
 }

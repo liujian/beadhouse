@@ -22,4 +22,6 @@ public interface MessageMapper {
 	ChatHistory selectChatByChatid(Integer chatid);
 
 	List<ChatHistoryOut> getwaitquests(ChatHistory chatHistory);
+
+	ChatHistoryOut getQuestById(ChatHistory chatHistory);
 }

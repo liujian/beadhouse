@@ -18,6 +18,8 @@ public class ElderRegistrationParam {
 	
 	private String code;
 
+	private String fireBaseToken;
+
 	public String getCode() {
 		return code;
 	}
@@ -81,8 +83,12 @@ public class ElderRegistrationParam {
 	public void setElderAvatar(String elderAvatar) {
 		this.elderAvatar = elderAvatar;
 	}
-	
-	
-	
 
+	public String getFireBaseToken() {
+		return fireBaseToken;
+	}
+
+	public void setFireBaseToken(String fireBaseToken) {
+		this.fireBaseToken = fireBaseToken;
+	}
 }

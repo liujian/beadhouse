@@ -1,10 +1,15 @@
 package com.beadhouse.service.impl;
 
 
+import java.io.IOException;
 import java.util.Date;
 
+import com.beadhouse.dao.ImageMapper;
+import com.beadhouse.domen.Image;
 import com.beadhouse.in.*;
 import com.beadhouse.redis.RedisService;
+import com.beadhouse.utils.FireBaseUtil;
+import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -21,7 +26,6 @@ import com.beadhouse.service.UserService;
 import com.beadhouse.utils.Utils;
 
 
-
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -32,6 +36,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private ElderUserMapper elderUserMapper;
     @Autowired
+    private ImageMapper imageMapper;
+    @Autowired
     private RedisService redisService;
     @Value("${google.SERVER_IMAGE}")
     private String SERVER_IMAGE;
@@ -41,39 +47,39 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public BasicData registration(RegistrationParam param) {
-    	
-    	 if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
-             return BasicData.CreateErrorMsg("Email address is empty");
-         }
-         if (param.getPassword() == null || param.getPassword().isEmpty()) {
-             return BasicData.CreateErrorMsg("Password is empty");
-         }
-         if (param.getFirstName() == null || param.getFirstName().isEmpty()) {
-             return BasicData.CreateErrorMsg("First name is empty");
-         }
-         if (param.getLastName() == null || param.getLastName().isEmpty()) {
-             return BasicData.CreateErrorMsg("Last name is empty");
-         }
-         if (param.getBirthday() == null || param.getBirthday().isEmpty()) {
-             return BasicData.CreateErrorMsg("Birthday is empty");
-         }
-         if (param.getCode() == null || param.getCode().isEmpty()) {
-             return BasicData.CreateErrorMsg("Code is empty");
-         }
-         
-    	String code =param.getCode();
-    	String emailAddress=param.getEmailAddress();
-    	if(!redisService.exists(emailAddress)){
-    		return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
-    	}else if(!redisService.getObj(emailAddress).equals(code)){
-    		return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
-    	}
+
+        if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
+            return BasicData.CreateErrorMsg("Email address is empty");
+        }
+        if (param.getPassword() == null || param.getPassword().isEmpty()) {
+            return BasicData.CreateErrorMsg("Password is empty");
+        }
+        if (param.getFirstName() == null || param.getFirstName().isEmpty()) {
+            return BasicData.CreateErrorMsg("First name is empty");
+        }
+        if (param.getLastName() == null || param.getLastName().isEmpty()) {
+            return BasicData.CreateErrorMsg("Last name is empty");
+        }
+        if (param.getBirthday() == null || param.getBirthday().isEmpty()) {
+            return BasicData.CreateErrorMsg("Birthday is empty");
+        }
+        if (param.getCode() == null || param.getCode().isEmpty()) {
+            return BasicData.CreateErrorMsg("Code is empty");
+        }
+
+        String code = param.getCode();
+        String emailAddress = param.getEmailAddress();
+        if (!redisService.exists(emailAddress)) {
+            return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
+        } else if (!redisService.getObj(emailAddress).equals(code)) {
+            return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
+        }
 
         User user = userMapper.selectByEmailAddress(param.getEmailAddress());
         if (user != null) {
             return BasicData.CreateErrorMsg("This account already exists!");
         }
-       
+
 
         user = new User();
         user.setEmailAddress(param.getEmailAddress());
@@ -82,6 +88,7 @@ public class UserServiceImpl implements UserService {
         user.setLastName(param.getLastName());
         user.setPhone(param.getPhone());
         user.setBirthday(param.getBirthday());
+        user.setFireBaseToken(param.getFireBaseToken());
         user.setCreateDate(new Date());
 
         userMapper.insertUser(user);
@@ -113,15 +120,63 @@ public class UserServiceImpl implements UserService {
         String token = Utils.getToken();
 
         user.setToken(token);
+        user.setFireBaseToken(param.getFireBaseToken());
         userMapper.updateToken(user);
 
 
         return BasicData.CreateSucess(user);
     }
 
+    public BasicData loginGoogleOrFacebook(GoogleAndFacebookParam param) {
+        if (param.getType() == 1) { //google
+            if (param.getGoogleLoginId() == null || param.getGoogleLoginId().isEmpty()) {
+                return BasicData.CreateErrorMsg("GoogleLoginId is empty");
+            }
+            User selectUser = userMapper.selectByGoogleLoginId(param.getGoogleLoginId());
+            if (selectUser == null) {
+                User googleUser = new User();
+                googleUser.setFirstName(param.getFirstName());
+                googleUser.setLastName(param.getLastName());
+                googleUser.setPhone(param.getPhone());
+                googleUser.setGoogleLoginId(param.getGoogleLoginId());
+                googleUser.setFireBaseToken(param.getFireBaseToken());
+                googleUser.setCreateDate(new Date());
+                userMapper.insertUser(googleUser);
+            }
+            User user = userMapper.selectByGoogleLoginId(param.getGoogleLoginId());
+            String token = Utils.getToken();
+            user.setToken(token);
+            user.setFireBaseToken(param.getFireBaseToken());
+            userMapper.updateTokenByGoogleLoginId(user);
+            return BasicData.CreateSucess(user);
+        } else if (param.getType() == 2) { //facebook
+            if (param.getFaceBookLoginId() == null || param.getFaceBookLoginId().isEmpty()) {
+                return BasicData.CreateErrorMsg("FaceBookLoginId is empty");
+            }
+            User selectUser = userMapper.selectByFaceBookLoginId(param.getFaceBookLoginId());
+            if (selectUser == null) {
+                User facebookUser = new User();
+                facebookUser.setFirstName(param.getFirstName());
+                facebookUser.setLastName(param.getLastName());
+                facebookUser.setPhone(param.getPhone());
+                facebookUser.setFaceBookLoginId(param.getFaceBookLoginId());
+                facebookUser.setFireBaseToken(param.getFireBaseToken());
+                facebookUser.setCreateDate(new Date());
+                userMapper.insertUser(facebookUser);
+            }
+            User user = userMapper.selectByFaceBookLoginId(param.getFaceBookLoginId());
+            String token = Utils.getToken();
+            user.setToken(token);
+            user.setFireBaseToken(param.getFireBaseToken());
+            userMapper.updateTokenByFacebookLoginId(user);
+            return BasicData.CreateSucess(user);
+        }
+        return BasicData.CreateErrorMsg("Type is error");
+    }
+
     @Override
     public BasicData bindingContacts(ContactsParam param) {
-         
+
         User user = userMapper.selectByToken(param.getToken());
 
         if (user == null) {
@@ -130,9 +185,9 @@ public class UserServiceImpl implements UserService {
         if (param.getCode() == null || param.getCode().isEmpty()) {
             return BasicData.CreateErrorMsg("Code is empty");
         }
-        String eldercode="elderbindcode"+param.getCode();
-        if(!redisService.exists(eldercode)){
-        	 return BasicData.CreateErrorMsg("The verification code is invalid");
+        String eldercode = "elderbindcode" + param.getCode();
+        if (!redisService.exists(eldercode)) {
+            return BasicData.CreateErrorMsg("The verification code is invalid");
         }
 
         ElderUser elderUser = elderUserMapper.selectByElderUserEmail(redisService.getObj(eldercode).toString());
@@ -147,8 +202,18 @@ public class UserServiceImpl implements UserService {
         if (cont != null) {
             return BasicData.CreateErrorMsg("Repeat binding account");
         }
-
         contactsmapper.insertContact(contact);
+        String error = "";
+        if (elderUser.getFireBaseToken() != null) {
+            try {
+                String body = user.getFirstName() + " " + user.getLastName() + " has been added to the contact list.";
+                FireBaseUtil.pushFCMNotification("4", new Gson().toJson(user), body, elderUser.getFireBaseToken());
+                return BasicData.CreateSucess();
+            } catch (IOException e) {
+                System.out.println("e = " + e);
+                error = e.getMessage();
+            }
+        }
         return BasicData.CreateSucess();
     }
 
@@ -218,6 +283,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public BasicData uploadElderScreen(TokenParam param, String fileName) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) return BasicData.CreateErrorInvalidUser();
+        Image image = new Image(SERVER_IMAGE + fileName, user.getId());
+        imageMapper.insertImage(image);
+        return BasicData.CreateSucess(SERVER_IMAGE + fileName);
+    }
+
+    @Override
     public BasicData getUserInfo(TokenParam param) {
         User user = userMapper.selectByToken(param.getToken());
         if (user == null) return BasicData.CreateErrorInvalidUser();
@@ -231,64 +305,64 @@ public class UserServiceImpl implements UserService {
     private String sender;
     @Value("${redis.expiry}")
     private Long expiry;
-    
-	@Override
-	public boolean sendCode(GetCodeParam param, String code) {
-		String emailAddress =param.getEmailAddress();
-		String msg=null;
-		if("1".equals(param.getType())){
-			 msg ="Verifying code is："+ code+"(Registration verification code for nursing homes should be completed within "+expiry+" minutes)。";
-		}else{
-			 msg ="Reset code is："+ code+"(Reset passwordn code for nursing homes should be completed within "+expiry+" minutes)。";
-		}
-		try {
-			//邮箱发送验证码
-			SimpleMailMessage message = new SimpleMailMessage();
-	        message.setFrom(sender);
-	        message.setTo(emailAddress); //自己给自己发送邮件
-	        message.setSubject("theme：App verification code for nursing home");
-	        message.setText(msg);
-	        System.out.println("Start sending mail！");
-	        System.out.println("Mailbox content："+msg);
-	        mailSender.send(message);
-	        System.out.println("Mail sent successfully！");
-			//保存验证码至redis数据库并设置失效时间为5分钟
-		   redisService.set(emailAddress, code, expiry);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return false;		
-		}
-		return true;
-	}
 
-	@Override
-	public BasicData forgetPassword(NewPasswordParam param) {
-		if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
+    @Override
+    public boolean sendCode(GetCodeParam param, String code) {
+        String emailAddress = param.getEmailAddress();
+        String msg = null;
+        if ("1".equals(param.getType())) {
+            msg = "Verifying code is：" + code + "(Registration verification code for nursing homes should be completed within " + expiry + " minutes)。";
+        } else {
+            msg = "Reset code is：" + code + "(Reset passwordn code for nursing homes should be completed within " + expiry + " minutes)。";
+        }
+        try {
+            //邮箱发送验证码
+            SimpleMailMessage message = new SimpleMailMessage();
+            message.setFrom(sender);
+            message.setTo(emailAddress); //自己给自己发送邮件
+            message.setSubject("theme：App verification code for nursing home");
+            message.setText(msg);
+            System.out.println("Start sending mail！");
+            System.out.println("Mailbox content：" + msg);
+            mailSender.send(message);
+            System.out.println("Mail sent successfully！");
+            //保存验证码至redis数据库并设置失效时间为5分钟
+            redisService.set(emailAddress, code, expiry);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public BasicData forgetPassword(NewPasswordParam param) {
+        if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
             return BasicData.CreateErrorMsg("Email address is empty");
         }
         if (param.getNewPassword() == null || param.getNewPassword().isEmpty()) {
             return BasicData.CreateErrorMsg("NewPassword is empty");
         }
-        
+
         if (param.getCode() == null || param.getCode().isEmpty()) {
             return BasicData.CreateErrorMsg("Code is empty");
         }
-     	String code =param.getCode();
-   	    String emailAddress=param.getEmailAddress();
-     	if(!redisService.exists(emailAddress)){
-   		    return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
-   	    }else if(!redisService.getObj(emailAddress).equals(code)){
-   		    return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
-   	    }
-     	
- 	   User user = userMapper.selectByEmailAddress(param.getEmailAddress());
-       if (user == null) {
-           return BasicData.CreateErrorMsg("This account does not exist!");
-       }
-       user.setPassword(param.getNewPassword());
-       user.setUpdateDate(new Date());
-       userMapper.updatePassword(user);
-       
-	 	 return BasicData.CreateSucess(user);
-	  }
+        String code = param.getCode();
+        String emailAddress = param.getEmailAddress();
+        if (!redisService.exists(emailAddress)) {
+            return BasicData.CreateErrorMsg("The verification code has expired. Please revalidate the code!");
+        } else if (!redisService.getObj(emailAddress).equals(code)) {
+            return BasicData.CreateErrorMsg("The verification code is incorrect. Please re input!");
+        }
+
+        User user = userMapper.selectByEmailAddress(param.getEmailAddress());
+        if (user == null) {
+            return BasicData.CreateErrorMsg("This account does not exist!");
+        }
+        user.setPassword(param.getNewPassword());
+        user.setUpdateDate(new Date());
+        userMapper.updatePassword(user);
+
+        return BasicData.CreateSucess(user);
+    }
 }

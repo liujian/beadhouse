@@ -86,6 +86,20 @@ public class UserController {
         return userService.login(param);
     }
 
+
+    /**
+     * Google Facebook 登录
+     * @param param
+     * @param request
+     * @return
+     */
+    @RequestMapping("loginGoogleOrFacebook")
+    @ResponseBody
+    @Transactional
+    public BasicData loginGoogleOrFacebook(@Valid @RequestBody GoogleAndFacebookParam param, HttpServletRequest request) {
+        return userService.loginGoogleOrFacebook(param);
+    }
+
     /**
      * 忘记密码
      *
@@ -184,9 +198,32 @@ public class UserController {
         String uploadFileName = null;
         if (file != null) {
             uploadFileName = GoogleStorageUtil.uploadFile(file);
-            if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
+            if (uploadFileName == null) return BasicData.CreateErrorMsg("File upload fail");
         }
         return userService.updateUserAvatar(param, uploadFileName);
+    }
+
+
+    /**
+     * 上传老人屏保
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("uploadElderScreen")
+    @ResponseBody
+    public BasicData uploadElderScreen(TokenParam param, HttpServletRequest request) {
+        if (param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), TokenParam.class);
+        //上传文件至google
+        MultipartFile file = UploadUtil.getFile(request);
+        String uploadFileName = null;
+        if (file != null) {
+            System.out.println(file.getName());
+            uploadFileName = GoogleStorageUtil.uploadFile(file);
+            if (uploadFileName == null) return BasicData.CreateErrorMsg("File upload fail");
+        }
+        return userService.uploadElderScreen(param, uploadFileName);
     }
 
     /**

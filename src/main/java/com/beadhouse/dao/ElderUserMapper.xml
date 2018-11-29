@@ -17,11 +17,12 @@
         <result column="modificationDate" property="modificationDate" jdbcType="TIMESTAMP"/>
         <result column="modificationUser" property="modificationUser" jdbcType="VARCHAR"/>
         <result column="token" jdbcType="VARCHAR" property="token"/>
-         <result column="elderAvatar" jdbcType="VARCHAR" property="elderAvatar"/>
+        <result column="fireBaseToken" jdbcType="VARCHAR" property="fireBaseToken"/>
+        <result column="elderAvatar" jdbcType="VARCHAR" property="elderAvatar"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-    elderUserId, elderUserEmail, elderFirstName,elderLastName,elderBirthday, elderUserAge, elderUserAddress, elderUserPassword, elderUserPhone, elderUserOther,createDate,createUser,modificationUser,modificationDate,token,elderAvatar
+    elderUserId, elderUserEmail, elderFirstName,elderLastName,elderBirthday, elderUserAge, elderUserAddress, elderUserPassword, elderUserPhone, elderUserOther,createDate,createUser,modificationUser,modificationDate,token,elderAvatar,fireBaseToken
   </sql>
 
     <select id="selectByElderUserEmail" parameterType="java.lang.String" resultMap="BaseResultMap">
@@ -36,6 +37,13 @@
         <include refid="Base_Column_List"/>
         from Table_elder_user
         where token = #{token,jdbcType=VARCHAR}
+    </select>
+
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_elder_user
+        where elderUserId = #{elderUserId,jdbcType=INTEGER}
     </select>
 
     <insert id="insertElderUser" parameterType="com.beadhouse.domen.ElderUser">
@@ -55,7 +63,8 @@
           modificationDate,
           modificationUser,
           token,
-           elderAvatar
+           elderAvatar,
+           fireBaseToken
           )
       values (
       #{elderUserEmail,jdbcType=VARCHAR},
@@ -72,7 +81,8 @@
       #{modificationDate,jdbcType=TIMESTAMP},
       #{modificationUser,jdbcType=VARCHAR},
       #{token,jdbcType=VARCHAR},
-      #{elderAvatar,jdbcType=VARCHAR}
+      #{elderAvatar,jdbcType=VARCHAR},
+      #{fireBaseToken,jdbcType=VARCHAR}
       )
   </insert>
 
@@ -80,12 +90,13 @@
        UPDATE
         Table_elder_user
         SET
-        token=#{token}
+        token=#{token},
+        fireBaseToken = #{fireBaseToken}
         where
         elderUserEmail=#{elderUserEmail}
   </update>
-  
-   <update id="updatePassword" parameterType="com.beadhouse.domen.ElderUser">
+
+    <update id="updatePassword" parameterType="com.beadhouse.domen.ElderUser">
        UPDATE
         Table_elder_user
         SET
@@ -93,7 +104,7 @@
         where
         elderUserEmail=#{elderUserEmail}
     </update>
-    
+
     <update id="updateElderInfo" parameterType="com.beadhouse.domen.ElderUser">
        UPDATE
         Table_elder_user
@@ -105,7 +116,7 @@
         where
         elderUserEmail=#{elderUserEmail}
     </update>
-    
+
     <update id="updateElderAvatar" parameterType="com.beadhouse.domen.ElderUser">
        UPDATE
         Table_elder_user
@@ -114,7 +125,6 @@
         where
         elderUserEmail=#{elderUserEmail}
     </update>
-    
 
 
 </mapper>

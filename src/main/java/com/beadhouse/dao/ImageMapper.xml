@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.beadhouse.dao.ImageMapper">
+    <resultMap id="BaseImageMap" type="com.beadhouse.domen.Image">
+        <result column="imageId" jdbcType="INTEGER" property="imageId"/>
+        <result column="imageUrl" jdbcType="VARCHAR" property="imageUrl"/>
+        <result column="loginUserId" jdbcType="INTEGER" property="loginUserId"/>
+    </resultMap>
+
+    <insert id="insertImage" useGeneratedKeys="true" keyProperty="id" parameterType="com.beadhouse.domen.Image">
+      insert into
+        Table_image (
+          imageUrl,
+          loginUserId
+          )
+      values (
+      #{imageUrl,jdbcType=VARCHAR},
+      #{loginUserId,jdbcType=INTEGER}
+      )
+  </insert>
+
+    <select id="selectImageByLoginUserId" parameterType="Integer" resultMap="BaseImageMap">
+    SELECT * FROM Table_image
+    WHERE Table_image.loginUserId = #{loginUserId,jdbcType=INTEGER}
+  </select>
+
+</mapper>
