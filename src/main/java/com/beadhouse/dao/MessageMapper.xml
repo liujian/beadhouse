@@ -81,7 +81,7 @@
 	      Where
 	        Table_chat_history.elderUserId=#{elderUserId}  
 	      AND
-	       (Table_chat_history.elderUserResponse is null or Table_chat_history.elderUserResponse ='')
+	       (Table_chat_history.responseDate is null or Table_chat_history.responseDate ='')
 	      order by questDate   
 	       
     </select>

@@ -2,13 +2,16 @@ package com.beadhouse.service.impl;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import com.beadhouse.dao.*;
 import com.beadhouse.domen.*;
 import com.beadhouse.in.*;
+import com.beadhouse.out.ScheduleOut;
 import com.beadhouse.utils.FireBaseUtil;
+import com.beadhouse.utils.TwilioUtil;
 import com.google.gson.Gson;
 import jdk.nashorn.internal.parser.Token;
 import org.slf4j.Logger;
@@ -25,6 +28,8 @@ import com.beadhouse.redis.RedisService;
 import com.beadhouse.service.ElderService;
 import com.beadhouse.utils.Utils;
 
+import javax.annotation.Resource;
+
 @Service
 public class ElderServiceImpl implements ElderService {
 
@@ -40,6 +45,10 @@ public class ElderServiceImpl implements ElderService {
     private UserMapper userMapper;
     @Autowired
     private ImageMapper imageMapper;
+    @Autowired
+    private ScheduleMapper scheduleMapper;
+    @Resource
+    private TwilioUtil twilioUtil;
 
 
     @Value("${google.SERVER_IMAGE}")
@@ -275,24 +284,26 @@ public class ElderServiceImpl implements ElderService {
     @Override
     public BasicData sendCode(ElderSendCodeParam param) {
 
-        String token = param.getToken();
         ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
         String username = elderUser.getElderFirstName() + " " + elderUser.getElderLastName();
-        List<String> list = param.getList();
-
-        for (String emailAddress : list) {
-            //邮箱发送验证码
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(sender);
-            message.setTo(emailAddress); //自己给自己发送邮件
-            message.setSubject("theme：Elderly homes, elderly binding code");
-            String msg = username + " Elderly Invite you to bind his / her mailbox and bind code as " + param.getCode();
-            message.setText(msg);
-            System.out.println("Start sending mail！");
-            System.out.println("Mailbox content：" + msg);
-            mailSender.send(message);
-            System.out.println("Mail sent successfully！");
+        String msg = username + " Elderly Invite you to bind his / her mailbox and bind code as " + param.getCode();
+        switch (param.getType()) {
+            case 1:
+                //邮箱发送验证码
+                SimpleMailMessage message = new SimpleMailMessage();
+                message.setFrom(sender);
+                message.setTo(param.getEmailOrPhone()); //自己给自己发送邮件
+                message.setSubject("theme：Elderly homes, elderly binding code");
+                message.setText(msg);
+                System.out.println("Start sending mail！");
+                System.out.println("Mailbox content：" + msg);
+                mailSender.send(message);
+                System.out.println("Mail sent successfully！");
+                break;
+            case 2:
+                twilioUtil.sendMessage(param.getEmailOrPhone(), msg);
+                break;
         }
 
         return BasicData.CreateSucess();
@@ -331,9 +342,23 @@ public class ElderServiceImpl implements ElderService {
     }
 
     @Override
-    public BasicData getScreenImage(TokenParam param) {
+    public BasicData getSchedule(TokenParam param) {
         ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+        Date now = new Date();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(now);// 将时分秒,毫秒域清零
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        ScheduleOut schedule = scheduleMapper.getScheduleByDate(calendar.getTime());
+        if (schedule == null) {
+            schedule = new ScheduleOut();
+        } else {
+            schedule.setActivityList(scheduleMapper.getActivityList(schedule.getScheduleId()));
+        }
+
         List<Image> imageList = new ArrayList<>();
         List<Contact> contactList = contactsMapper.selectByElderUserId(elderUser.getElderUserId());
         if (contactList.size() != 0) {
@@ -341,8 +366,7 @@ public class ElderServiceImpl implements ElderService {
                 imageList.addAll(imageMapper.selectImageByLoginUserId(contact.getLoginUserId()));
             }
         }
-        return BasicData.CreateSucess(imageList);
+        schedule.setImageList(imageList);
+        return BasicData.CreateSucess(schedule);
     }
-
-
 }

@@ -1,6 +1,7 @@
 package com.beadhouse.out;
 
 import com.beadhouse.domen.Activity;
+import com.beadhouse.domen.Image;
 
 import java.util.Date;
 import java.util.List;
@@ -12,6 +13,7 @@ public class ScheduleOut {
     private String lunch;
     private String dinner;
     private List<Activity> activityList;
+    private List<Image> imageList;
 
     public Integer getScheduleId() {
         return scheduleId;
@@ -59,5 +61,13 @@ public class ScheduleOut {
 
     public void setActivityList(List<Activity> activityList) {
         this.activityList = activityList;
+    }
+
+    public List<Image> getImageList() {
+        return imageList;
+    }
+
+    public void setImageList(List<Image> imageList) {
+        this.imageList = imageList;
     }
 }
