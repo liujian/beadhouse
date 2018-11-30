@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 @Component
 public class RedisService <T> {
 	
-	@Resource
+	@Autowired
     private RedisTemplate redisTemplate;
 
     @Resource(name = "redisTemplate")
