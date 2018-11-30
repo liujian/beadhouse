@@ -7,9 +7,7 @@ import com.beadhouse.in.*;
 import com.beadhouse.utils.GoogleStorageUtil;
 import com.beadhouse.utils.UploadUtil;
 import com.google.gson.Gson;
-import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,8 +16,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.service.ElderService;
 import org.springframework.web.multipart.MultipartFile;
-import java.io.File;
-import java.io.InputStream;
 
 @RestController
 public class ElderController {
@@ -235,19 +231,14 @@ public class ElderController {
     }
 
     /**
-     * 获得
-     *
-     * @param param
+     * 获取日程
      * @param request
      * @return
-     * @throws Exception
      */
-    @RequestMapping("elder/getScreenImage")
+    @RequestMapping("elder/getSchedule")
     @ResponseBody
-    @Transactional
-    public BasicData getScreenImage(@Valid @RequestBody TokenParam param, HttpServletRequest request){
-        return elderService.getScreenImage(param);
+    public BasicData getSchedule(@Valid @RequestBody TokenParam param, HttpServletRequest request){
+        return elderService.getSchedule(param);
     }
-
 
 }

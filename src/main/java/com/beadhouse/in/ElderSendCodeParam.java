@@ -7,7 +7,9 @@ public class ElderSendCodeParam extends BasicIn {
 
     private String token;
     
-    private List<String> list;
+    private String emailOrPhone;
+
+    private int type; //1-email,2-phone
     
     private String code;
 
@@ -19,12 +21,12 @@ public class ElderSendCodeParam extends BasicIn {
         this.token = token;
     }
 
-	public List<String> getList() {
-		return list;
+	public String getEmailOrPhone() {
+		return emailOrPhone;
 	}
 
-	public void setList(List<String> list) {
-		this.list = list;
+	public void setEmailOrPhone(String emailOrPhone) {
+		this.emailOrPhone = emailOrPhone;
 	}
 
 	public String getCode() {
@@ -34,7 +36,12 @@ public class ElderSendCodeParam extends BasicIn {
 	public void setCode(String code) {
 		this.code = code;
 	}
-    
-	
-	
+
+	public int getType() {
+		return type;
+	}
+
+	public void setType(int type) {
+		this.type = type;
+	}
 }

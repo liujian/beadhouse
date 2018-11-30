@@ -97,9 +97,9 @@ public interface ElderService {
     BasicData toAskMe(AskMeParam param);
 
     /**
-     * 老人求问题
+     * 获取日程
+     * @return
      */
-    BasicData getScreenImage(TokenParam param);
-    
-    
+    BasicData getSchedule(TokenParam param);
+
 }
