@@ -1,7 +1,8 @@
 package com.beadhouse.out;
+import java.io.Serializable;
 import java.util.Date;
 
-public class ChatHistoryOut {
+public class ChatHistoryOut implements Serializable {
 
 	private Integer chatId;
 
