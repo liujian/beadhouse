@@ -134,7 +134,6 @@
     <select id="selectElderChatHistory" parameterType="com.beadhouse.in.GetMessageParam" resultMap="BaseResultMap">
         SELECT
         *
-
         FROM
         Table_chat_history
         LEFT JOIN Table_login_user
@@ -154,7 +153,9 @@
         <if test="isCollection==1">
             and Table_chat_history.chatid
             in (select chatid from table_collection where table_collection.elderUserId=#{elderUserId,jdbcType=INTEGER} )
-
+        </if>
+          <if test="loginUserId !=null and loginUserId != ''">
+            and Table_chat_history.loginUserId=#{loginUserId,jdbcType=INTEGER}
         </if>
 
         ORDER BY Table_chat_history.chatId DESC
