@@ -13,13 +13,14 @@ import com.beadhouse.dao.UserMapper;
 import com.beadhouse.domen.DefineQuest;
 import com.beadhouse.domen.ElderUser;
 import com.beadhouse.domen.User;
-import com.beadhouse.in.AnswerQuestParam;
-import com.beadhouse.in.GetMessageParam;
+import com.beadhouse.in.*;
 import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.out.ChatHistoryOutList;
 import com.beadhouse.redis.RedisService;
 
+import com.beadhouse.utils.FFMpegMusicUtil;
 import com.beadhouse.utils.FireBaseUtil;
+import com.beadhouse.utils.TwilioUtil;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +31,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.beadhouse.dao.MessageMapper;
 import com.beadhouse.domen.ChatHistory;
-import com.beadhouse.in.SendMessageParam;
-import com.beadhouse.in.UpdateChatParam;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.service.SendMessageService;
+
+import javax.annotation.Resource;
 
 @Service
 public class SendMessageServiceImpl implements SendMessageService {
@@ -52,6 +53,8 @@ public class SendMessageServiceImpl implements SendMessageService {
     private RedisService redisService;
     @Value("${google.SERVER_IMAGE}")
     private String SERVER_IMAGE;
+    @Resource
+    private FireBaseUtil fireBaseUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(SendMessageServiceImpl.class);
 
@@ -88,7 +91,7 @@ public class SendMessageServiceImpl implements SendMessageService {
         try {
             ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
             String body = user.getFirstName() + " " + user.getLastName() + ":" + chatHistoryOut.getQuest();
-            FireBaseUtil.pushFCMNotification("2", new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
+            fireBaseUtil.pushFCMNotification("2", new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
             return BasicData.CreateSucess(chatHistory);
         } catch (IOException e) {
             System.out.println("e = " + e);
@@ -241,7 +244,7 @@ public class SendMessageServiceImpl implements SendMessageService {
 
         try {
             String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + ":" + chatHistoryOut.getElderUserResponse();
-            FireBaseUtil.pushFCMNotification("3", new Gson().toJson(chatHistoryOut), body, userMapper.selectById(chatHistoryOut.getLoginUserId()).getFireBaseToken());
+            fireBaseUtil.pushFCMNotification("3", new Gson().toJson(chatHistoryOut), body, userMapper.selectById(chatHistoryOut.getLoginUserId()).getFireBaseToken());
             return BasicData.CreateSucess(chatHistory);
         } catch (IOException e) {
             System.out.println("e = " + e);
@@ -282,6 +285,27 @@ public class SendMessageServiceImpl implements SendMessageService {
             messageMapper.updatechat(chat);
         } else {
             return BasicData.CreateErrorMsg("You can only modify your own chat history!");
+        }
+        return BasicData.CreateSucess(chat);
+    }
+
+
+    @Override
+    public BasicData askAgain(AskAgainParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) {
+            return BasicData.CreateErrorInvalidUser();
+        }
+        ChatHistory chat = messageMapper.selectChatByChatid(param.getChatId());
+        ElderUser elderUser = elderUserMapper.selectById(chat.getElderUserId());
+        try {
+            ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chat);
+            String body = user.getFirstName() + " " + user.getLastName() + ":" + chatHistoryOut.getQuest();
+            fireBaseUtil.pushFCMNotification("2", new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
+            System.out.println("push success");
+            return BasicData.CreateSucess(chat);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
         }
         return BasicData.CreateSucess(chat);
     }

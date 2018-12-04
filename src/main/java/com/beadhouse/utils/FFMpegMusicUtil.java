@@ -5,26 +5,22 @@ import java.io.File;
 import org.jboss.logging.Logger;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 
-@Component
+@Service
 public class FFMpegMusicUtil {
 
     private static final Logger logger = Logger.getLogger(FFMpegMusicUtil.class);
-    private static String FFMPEG_PATH = "D:\\养老院项目\\ffmpeg-20181018-f72b990-win64-static\\bin\\";//ffMpeg解压的bin地址
-                                         
-    private static String TMP_PATH = "D:\\scratchFile\\";//转为音频后 存放的地址
-    private static String MUSIC_ADDRESS;
-
-    public static void main(String... args) throws Exception {
-        videoToAudio("D:\\liuj.mp4","liuj.amr");
-    }
+    @Value("${ffmpeg.path}")
+    private String FFMPEG_PATH;//ffMpeg解压的bin地址
+    @Value("${temp.path}")
+    private String TMP_PATH;//转为音频后 存放的地址
 
     /**
      * 视频转音频 返回上传的音频地址
-     * @param videoUrl视频地址
      */
-    public static String videoToAudio(String videoUrl,String videoName){
+    public String videoToAudio(String videoUrl,String videoName){
         String musicUrl = "";
         try {
             String aacFile = TMP_PATH + videoName;

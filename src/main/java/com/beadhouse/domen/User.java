@@ -46,6 +46,10 @@ public class User implements Serializable{
 
 	private String faceBookLoginId;
 
+	private int notifyType;
+
+	private Date notifyDate;
+
 	public Integer getId() {
 		return id;
 	}
@@ -134,5 +138,21 @@ public class User implements Serializable{
 
 	public void setFaceBookLoginId(String faceBookLoginId) {
 		this.faceBookLoginId = faceBookLoginId;
+	}
+
+	public int getNotifyType() {
+		return notifyType;
+	}
+
+	public void setNotifyType(int notifyType) {
+		this.notifyType = notifyType;
+	}
+
+	public Date getNotifyDate() {
+		return notifyDate;
+	}
+
+	public void setNotifyDate(Date notifyDate) {
+		this.notifyDate = notifyDate;
 	}
 }

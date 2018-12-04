@@ -2,18 +2,13 @@ package com.beadhouse.service;
 
 import java.util.List;
 
-import com.beadhouse.in.AnswerQuestParam;
-import com.beadhouse.in.CollectionParam;
-import com.beadhouse.in.GetMessageParam;
+import com.beadhouse.in.*;
 import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.out.ChatHistoryOutList;
 
 import org.springframework.web.multipart.MultipartFile;
 
 import com.beadhouse.domen.ChatHistory;
-import com.beadhouse.in.MessageParam;
-import com.beadhouse.in.SendMessageParam;
-import com.beadhouse.in.UpdateChatParam;
 import com.beadhouse.out.BasicData;
 
 public interface SendMessageService {
@@ -49,5 +44,11 @@ public interface SendMessageService {
 	 */
 
 	BasicData updateChatHistoryByElder(UpdateChatParam param);
+
+	/**
+	 * 家人再问一次这个问题
+	 */
+
+	BasicData askAgain(AskAgainParam param);
 
 }

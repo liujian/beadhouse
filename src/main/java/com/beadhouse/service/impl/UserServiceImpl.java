@@ -8,6 +8,7 @@ import com.beadhouse.dao.ImageMapper;
 import com.beadhouse.domen.Image;
 import com.beadhouse.in.*;
 import com.beadhouse.redis.RedisService;
+import com.beadhouse.utils.Constant;
 import com.beadhouse.utils.FireBaseUtil;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,8 @@ import com.beadhouse.out.BasicData;
 import com.beadhouse.service.UserService;
 import com.beadhouse.utils.Utils;
 
+import javax.annotation.Resource;
+
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -41,6 +44,8 @@ public class UserServiceImpl implements UserService {
     private RedisService redisService;
     @Value("${google.SERVER_IMAGE}")
     private String SERVER_IMAGE;
+    @Resource
+    private FireBaseUtil fireBaseUtil;
 
     //private static Logger log = Logger.getLogger(UserServiceImpl.class);
 
@@ -90,6 +95,8 @@ public class UserServiceImpl implements UserService {
         user.setBirthday(param.getBirthday());
         user.setFireBaseToken(param.getFireBaseToken());
         user.setCreateDate(new Date());
+        user.setNotifyType(Constant.NOTIFY_TYPE_ONE_WEEK);
+        user.setNotifyDate(new Date());
 
         userMapper.insertUser(user);
         String token = Utils.getToken();
@@ -141,6 +148,8 @@ public class UserServiceImpl implements UserService {
                 googleUser.setGoogleLoginId(param.getGoogleLoginId());
                 googleUser.setFireBaseToken(param.getFireBaseToken());
                 googleUser.setCreateDate(new Date());
+                googleUser.setNotifyType(Constant.NOTIFY_TYPE_ONE_WEEK);
+                googleUser.setNotifyDate(new Date());
                 userMapper.insertUser(googleUser);
             }
             User user = userMapper.selectByGoogleLoginId(param.getGoogleLoginId());
@@ -162,6 +171,8 @@ public class UserServiceImpl implements UserService {
                 facebookUser.setFaceBookLoginId(param.getFaceBookLoginId());
                 facebookUser.setFireBaseToken(param.getFireBaseToken());
                 facebookUser.setCreateDate(new Date());
+                facebookUser.setNotifyType(Constant.NOTIFY_TYPE_ONE_WEEK);
+                facebookUser.setNotifyDate(new Date());
                 userMapper.insertUser(facebookUser);
             }
             User user = userMapper.selectByFaceBookLoginId(param.getFaceBookLoginId());
@@ -207,11 +218,10 @@ public class UserServiceImpl implements UserService {
         if (elderUser.getFireBaseToken() != null) {
             try {
                 String body = user.getFirstName() + " " + user.getLastName() + " has been added to the contact list.";
-                FireBaseUtil.pushFCMNotification("4", new Gson().toJson(user), body, elderUser.getFireBaseToken());
+                fireBaseUtil.pushFCMNotification("4", new Gson().toJson(user), body, elderUser.getFireBaseToken());
                 return BasicData.CreateSucess();
             } catch (IOException e) {
                 System.out.println("e = " + e);
-                error = e.getMessage();
             }
         }
         return BasicData.CreateSucess();
@@ -363,6 +373,17 @@ public class UserServiceImpl implements UserService {
         user.setUpdateDate(new Date());
         userMapper.updatePassword(user);
 
+        return BasicData.CreateSucess(user);
+    }
+
+    @Override
+    public BasicData setNotifyType(NotifyParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) return BasicData.CreateErrorInvalidUser();
+        if (param.getNotifyType() < Constant.NOTIFY_TYPE_NEVER || param.getNotifyType() > Constant.NOTIFY_TYPE_SURPRISE)
+            return BasicData.CreateErrorMsg("Type is error");
+        user.setNotifyType(param.getNotifyType());
+        userMapper.updateNotifyType(user);
         return BasicData.CreateSucess(user);
     }
 }

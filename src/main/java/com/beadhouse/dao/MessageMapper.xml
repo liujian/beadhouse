@@ -154,7 +154,7 @@
             and Table_chat_history.chatid
             in (select chatid from table_collection where table_collection.elderUserId=#{elderUserId,jdbcType=INTEGER} )
         </if>
-          <if test="loginUserId !=null and loginUserId != ''">
+        <if test="loginUserId !=null and loginUserId != 0">
             and Table_chat_history.loginUserId=#{loginUserId,jdbcType=INTEGER}
         </if>
 

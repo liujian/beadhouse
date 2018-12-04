@@ -227,12 +227,25 @@ public class UserController {
     }
 
     /**
+     * 设置提醒
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("setNotifyType")
+    @ResponseBody
+    public BasicData setNotifyType(@RequestBody NotifyParam param, HttpServletRequest request) {
+        return userService.setNotifyType(param);
+    }
+
+
+    /**
      * 检查token是否过期
      */
     @RequestMapping("checkToken")
     @ResponseBody
     public BasicData checkToken(@RequestParam String token, HttpServletRequest request) {
-
         return BasicData.CreateErrorInvalidUser();
     }
 

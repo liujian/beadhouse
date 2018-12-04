@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
-import com.beadhouse.in.AnswerQuestParam;
-import com.beadhouse.in.GetMessageParam;
+import com.beadhouse.in.*;
 import com.beadhouse.utils.*;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import com.beadhouse.in.SendMessageParam;
-import com.beadhouse.in.UpdateChatParam;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.service.SendMessageService;
 import com.beadhouse.service.impl.ElderServiceImpl;
@@ -36,6 +34,8 @@ public class MessageController {
 
     @Autowired
     SendMessageService sendMessageService;
+    @Resource
+    private FFMpegMusicUtil ffMpegMusicUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
@@ -68,14 +68,14 @@ public class MessageController {
                 if (fileName.endsWith(".amr")) {
                     fileText = GoogleSpeechUtil.translateAudio(scratchFile);
                 } else {
-                    String audioPath = FFMpegMusicUtil.videoToAudio(scratchFile.getPath(), UUID.randomUUID() + ".amr");
+                    String audioPath = ffMpegMusicUtil.videoToAudio(scratchFile.getPath(), UUID.randomUUID() + ".amr");
                     audioFile = new File(audioPath);
                     if (audioFile.exists()) {
                         fileText = GoogleSpeechUtil.translateAudio(audioFile);
                     }
                 }
                 logger.info("fileText-------" + fileText);
-                //上传文件至亚马逊
+                //上传文件至谷歌
                 logger.info("start google uploadFileToBucket");
                 uploadFileName = GoogleStorageUtil.uploadFile(file);
                 if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
@@ -144,6 +144,16 @@ public class MessageController {
     }
 
     /**
+     * 再问一次
+     */
+    @RequestMapping("askAgain")
+    @ResponseBody
+    public BasicData askAgain(@Valid @RequestBody AskAgainParam param, HttpServletRequest request) {
+
+        return sendMessageService.askAgain(param);
+    }
+
+    /**
      * 回答问题
      *
      * @param request
@@ -171,7 +181,7 @@ public class MessageController {
                 if (fileName.endsWith(".amr")) {
                     fileText = GoogleSpeechUtil.translateAudio(scratchFile);
                 } else {
-                    String audioPath = FFMpegMusicUtil.videoToAudio(scratchFile.getPath(), UUID.randomUUID() + ".amr");
+                    String audioPath = ffMpegMusicUtil.videoToAudio(scratchFile.getPath(), UUID.randomUUID() + ".amr");
                     audioFile = new File(audioPath);
                     if (audioFile.exists()) {
                         fileText = GoogleSpeechUtil.translateAudio(audioFile);

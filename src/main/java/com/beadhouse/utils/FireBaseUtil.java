@@ -12,6 +12,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * fireBase消息推送
@@ -21,19 +23,21 @@ import com.google.gson.JsonObject;
  * @date 2018年11月9日
  * @class FireBaseUtil.java
  */
+@Service
 public class FireBaseUtil {
 
-    public final static String AUTH_KEY_FCM = "AIzaSyBTCu4PgkrKq1SXrZ5_1_63j1Yhlq4Enxo";//app服务密钥
+//    public final static String AUTH_KEY_FCM = "AIzaSyBTCu4PgkrKq1SXrZ5_1_63j1Yhlq4Enxo";//app服务密钥
 
-    private static final String PROJECT_ID = "family-217806";
-    private static final String BASE_URL = "https://fcm.googleapis.com";
-    private static final String FCM_SEND_ENDPOINT = "/v1/projects/" + PROJECT_ID + "/messages:send";
-
-    private static final String MESSAGING_SCOPE = "https://www.googleapis.com/auth/firebase.messaging";
-    private static final String[] SCOPES = {MESSAGING_SCOPE};
-
-    private static final String TITLE = "The Mapleton Assisted Living";
-    public static final String MESSAGE_KEY = "message";
+    @Value("${fireBase.projectId}")
+    private String PROJECT_ID;
+    @Value("${fireBase.baseUrl}")
+    private String BASE_URL;
+    @Value("${fireBase.message.scope}")
+    private String MESSAGING_SCOPE;
+    private String[] SCOPES = new String[1];
+    @Value("${fireBase.title}")
+    private String TITLE;
+    public String MESSAGE_KEY = "message";
 
     public static void main(String[] args) {
 //        try {
@@ -58,7 +62,7 @@ public class FireBaseUtil {
      *
      * @return JSON of notification message.
      */
-    private static JsonObject buildNotificationMessage(String type, String json, String body, String fireBaseToken) {
+    private JsonObject buildNotificationMessage(String type, String json, String body, String fireBaseToken) {
         JsonObject jNotification = new JsonObject();
         jNotification.addProperty("title", TITLE);
         jNotification.addProperty("body", body);
@@ -85,7 +89,8 @@ public class FireBaseUtil {
      * @throws IOException
      */
     // [START retrieve_access_token]
-    private static String getAccessToken() throws IOException {
+    private String getAccessToken() throws IOException {
+        SCOPES[0] = MESSAGING_SCOPE;
         GoogleCredential googleCredential = GoogleCredential
                 .fromStream(new FileInputStream("D:\\file\\family-217806-firebase-adminsdk-02g0j-066b629a66.json"))
                 .createScoped(Arrays.asList(SCOPES));
@@ -100,8 +105,9 @@ public class FireBaseUtil {
      * @return Base HttpURLConnection.
      * @throws IOException
      */
-    private static HttpURLConnection getConnection() throws IOException {
+    private HttpURLConnection getConnection() throws IOException {
         // [START use_access_token]
+        String FCM_SEND_ENDPOINT = "/v1/projects/" + PROJECT_ID + "/messages:send";
         URL url = new URL(BASE_URL + FCM_SEND_ENDPOINT);
         HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
         httpURLConnection.setRequestProperty("Authorization", "Bearer " + getAccessToken());
@@ -110,7 +116,7 @@ public class FireBaseUtil {
         // [END use_access_token]
     }
 
-    public static void pushFCMNotification(String type, String json, String body, String fireBaseToken) throws IOException {
+    public void pushFCMNotification(String type, String json, String body, String fireBaseToken) throws IOException {
         JsonObject fcmMessage = buildNotificationMessage(type, json, body, fireBaseToken);
         HttpURLConnection connection = getConnection();
         connection.setDoOutput(true);

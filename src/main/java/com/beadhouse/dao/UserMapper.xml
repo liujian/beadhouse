@@ -16,10 +16,19 @@
         <result column="fireBaseToken" jdbcType="VARCHAR" property="fireBaseToken"/>
         <result column="googleLoginId" jdbcType="VARCHAR" property="googleLoginId"/>
         <result column="faceBookLoginId" jdbcType="VARCHAR" property="faceBookLoginId"/>
+        <result column="notifyType" jdbcType="INTEGER" property="notifyType"/>
+        <result column="notifyDate" property="notifyDate" jdbcType="TIMESTAMP"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id,emailAddress, password, firstName, lastName, phone,birthday,token,createDate, updateDate,userAvatar,fireBaseToken,googleLoginId,faceBookLoginId
+    id,emailAddress, password, firstName, lastName, phone,birthday,token,createDate, updateDate,userAvatar,fireBaseToken,googleLoginId,faceBookLoginId,notifyType,notifyDate
   </sql>
+
+    <select id="selectUserList" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from Table_login_user
+    </select>
+
     <select id="selectByEmailAddress" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -68,7 +77,9 @@
           updateDate,
           fireBaseToken,
           googleLoginId,
-          faceBookLoginId
+          faceBookLoginId,
+          notifyType,
+          notifyDate
           )
       values (
       #{emailAddress,jdbcType=VARCHAR},
@@ -81,7 +92,9 @@
       #{updateDate,jdbcType=TIMESTAMP},
       #{fireBaseToken,jdbcType=VARCHAR},
       #{googleLoginId,jdbcType=VARCHAR},
-      #{faceBookLoginId,jdbcType=VARCHAR}
+      #{faceBookLoginId,jdbcType=VARCHAR},
+      #{notifyType,jdbcType=INTEGER},
+      #{notifyDate,jdbcType=TIMESTAMP}
       )
   </insert>
 
@@ -143,6 +156,24 @@
         Table_login_user
         SET
         userAvatar=#{userAvatar}
+        where
+        token=#{token}
+  </update>
+
+    <update id="updateNotifyType" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        notifyType=#{notifyType}
+        where
+        token=#{token}
+  </update>
+
+    <update id="updateNotifyDate" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        notifyDate=#{notifyDate}
         where
         token=#{token}
   </update>

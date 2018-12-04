@@ -106,4 +106,13 @@ public interface UserService {
      * @throws Exception
      */
     BasicData uploadElderScreen(TokenParam param, String filePath);
+
+    /**
+     * 设置提醒
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData setNotifyType(NotifyParam param);
 }

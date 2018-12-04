@@ -49,6 +49,8 @@ public class ElderServiceImpl implements ElderService {
     private ScheduleMapper scheduleMapper;
     @Resource
     private TwilioUtil twilioUtil;
+    @Resource
+    private FireBaseUtil fireBaseUtil;
 
 
     @Value("${google.SERVER_IMAGE}")
@@ -331,7 +333,7 @@ public class ElderServiceImpl implements ElderService {
         if (loginUser != null && loginUser.getFireBaseToken() != null) {
             try {
                 String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + " wants you to ask a question";
-                FireBaseUtil.pushFCMNotification("1", new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
+                fireBaseUtil.pushFCMNotification("1", new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
                 return BasicData.CreateSucess();
             } catch (IOException e) {
                 System.out.println("e = " + e);
