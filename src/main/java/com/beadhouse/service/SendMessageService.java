@@ -1,5 +1,6 @@
 package com.beadhouse.service;
 
+import java.io.File;
 import java.util.List;
 
 import com.beadhouse.in.*;
@@ -16,12 +17,12 @@ public interface SendMessageService {
 	/**
 	 * 发送消息
 	 */
-	BasicData sendMessage(SendMessageParam param,String fileName,String fileText);
+	BasicData sendMessage(SendMessageParam param, File file);
 
 	/**
 	 * 回答问题
 	 */
-	BasicData answerQuestion(AnswerQuestParam param, String fileName, String fileText);
+	BasicData answerQuestion(AnswerQuestParam param, File file);
 	
 	
 	/**

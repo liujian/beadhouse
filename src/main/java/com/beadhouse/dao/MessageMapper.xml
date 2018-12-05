@@ -161,6 +161,16 @@
         ORDER BY Table_chat_history.chatId DESC
     </select>
 
+    <update id="updateQuestion" parameterType="com.beadhouse.domen.ChatHistory">
+       UPDATE
+        Table_chat_history
+        SET
+        userVoiceUrl=#{userVoiceUrl},
+        voicequest=#{voicequest}
+        where
+        chatId=#{chatId}
+  </update>
+
     <update id="updateAnswer" parameterType="com.beadhouse.domen.ChatHistory">
        UPDATE
         Table_chat_history

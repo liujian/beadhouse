@@ -15,6 +15,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.springframework.web.multipart.MultipartFile;
 
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -62,7 +64,32 @@ public class GoogleStorageUtil {
             storage.create(BlobInfo.newBuilder(bucketName, fileName)
                     // Modify access list to allow all users with link to read file
                     .setAcl(new ArrayList<>(Arrays.asList(Acl.of(User.ofAllUsers(), Role.READER))))
-                    .setContentType("image/jpeg").build(), file.getInputStream());
+                    .setContentType("video/mp4").build(), file.getInputStream());
+        } catch (IOException e) {
+            return null;
+        }
+        return fileName;
+    }
+
+    /**
+     * 上传图片到Google云存储
+     *
+     * @param file : 文件
+     * @throws IOException
+     * @return 
+     */
+    @SuppressWarnings("deprecation")
+    public static String uploadFile(File file) {
+        String type = ".mp4";
+        if (file.getName().endsWith(".amr")) type = ".amr";
+        final String fileName = getFileName() + type;
+        System.err.println("fileName:" + fileName);
+        //上传文件 BlobInfo blobInfo =
+        try {
+            storage.create(BlobInfo.newBuilder(bucketName, fileName)
+                    // Modify access list to allow all users with link to read file
+                    .setAcl(new ArrayList<>(Arrays.asList(Acl.of(User.ofAllUsers(), Role.READER))))
+                    .setContentType("video/mp4").build(), new FileInputStream(file));
         } catch (IOException e) {
             return null;
         }

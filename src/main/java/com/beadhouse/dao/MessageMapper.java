@@ -9,19 +9,21 @@ import com.beadhouse.domen.ChatHistory;
 
 @Mapper
 public interface MessageMapper {
-	void insertChatHistory(ChatHistory param);
+    void insertChatHistory(ChatHistory param);
 
-	List<ChatHistoryOut> selectChatHistory(GetMessageParam getMessageParam);
-	
-	List<ChatHistoryOut> selectElderChatHistory(GetMessageParam getMessageParam);
+    List<ChatHistoryOut> selectChatHistory(GetMessageParam getMessageParam);
 
-	void updateAnswer(ChatHistory chatHistory);
-	
-	void updatechat(ChatHistory chatHistory);
-	
-	ChatHistory selectChatByChatid(Integer chatid);
+    List<ChatHistoryOut> selectElderChatHistory(GetMessageParam getMessageParam);
 
-	List<ChatHistoryOut> getwaitquests(ChatHistory chatHistory);
+    void updateQuestion(ChatHistory chatHistory);
 
-	ChatHistoryOut getQuestById(ChatHistory chatHistory);
+    void updateAnswer(ChatHistory chatHistory);
+
+    void updatechat(ChatHistory chatHistory);
+
+    ChatHistory selectChatByChatid(Integer chatid);
+
+    List<ChatHistoryOut> getwaitquests(ChatHistory chatHistory);
+
+    ChatHistoryOut getQuestById(ChatHistory chatHistory);
 }

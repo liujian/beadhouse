@@ -1,11 +1,11 @@
 package com.beadhouse.service.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.beadhouse.controller.MessageController;
 import com.beadhouse.dao.CollectionMapper;
 import com.beadhouse.dao.ElderUserMapper;
 import com.beadhouse.dao.QuestMapper;
@@ -18,9 +18,7 @@ import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.out.ChatHistoryOutList;
 import com.beadhouse.redis.RedisService;
 
-import com.beadhouse.utils.FFMpegMusicUtil;
-import com.beadhouse.utils.FireBaseUtil;
-import com.beadhouse.utils.TwilioUtil;
+import com.beadhouse.utils.*;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,12 +53,15 @@ public class SendMessageServiceImpl implements SendMessageService {
     private String SERVER_IMAGE;
     @Resource
     private FireBaseUtil fireBaseUtil;
+    @Resource
+    private AsyncTask asyncTask;
+
 
     private static final Logger logger = LoggerFactory.getLogger(SendMessageServiceImpl.class);
 
     @Override
     @Transactional
-    public BasicData sendMessage(SendMessageParam param, String fileName, String fileText) {
+    public BasicData sendMessage(SendMessageParam param, File file) {
         logger.info(param.getToken());
         User user = userMapper.selectByToken(param.getToken());
         if (user == null) {
@@ -83,22 +84,11 @@ public class SendMessageServiceImpl implements SendMessageService {
             chatHistory.setDefineQuestId(defineQuest.getDefineQuestId());
             chatHistory.setQuest(param.getDefineQuest());
         }
-        chatHistory.setVoicequest(fileText);
         chatHistory.setQuestDate(new Date());
-        if (fileName != null) chatHistory.setUserVoiceUrl(SERVER_IMAGE + fileName);
         messageMapper.insertChatHistory(chatHistory);
-        ElderUser elderUser = elderUserMapper.selectById(param.getElderUserId());
-        try {
-            ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
-            String body = user.getFirstName() + " " + user.getLastName() + ":" + chatHistoryOut.getQuest();
-            fireBaseUtil.pushFCMNotification("2", new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
-            return BasicData.CreateSucess(chatHistory);
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
+        asyncTask.asyncToHandleSendMessage(param, file, user, chatHistory);
         return BasicData.CreateSucess(chatHistory);
     }
-
 
     @Value("${redis.chatsexpiry}")
     private Long expiry;
@@ -225,30 +215,18 @@ public class SendMessageServiceImpl implements SendMessageService {
 
     @Override
     @Transactional
-    public BasicData answerQuestion(AnswerQuestParam param, String fileName, String fileText) {
+    public BasicData answerQuestion(AnswerQuestParam param, File file) {
         ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) {
             return BasicData.CreateErrorInvalidUser();
         }
-//        if (fileName == null) return BasicData.CreateErrorMsg("文件上传失败");
-//        if (fileText == null) return BasicData.CreateErrorMsg("翻译失败");
 
         ChatHistory chatHistory = new ChatHistory();
         chatHistory.setChatId(param.getChatId());
         chatHistory.setResponseDate(new Date());
-        chatHistory.setElderUserVoiceUrl(SERVER_IMAGE + fileName);
-        chatHistory.setElderUserResponse(fileText);
         messageMapper.updateAnswer(chatHistory);
 
-        ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
-
-        try {
-            String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + ":" + chatHistoryOut.getElderUserResponse();
-            fireBaseUtil.pushFCMNotification("3", new Gson().toJson(chatHistoryOut), body, userMapper.selectById(chatHistoryOut.getLoginUserId()).getFireBaseToken());
-            return BasicData.CreateSucess(chatHistory);
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
+        asyncTask.asyncToHandleAnswerQuestion(param,file,elderUser,chatHistory);
 
         return BasicData.CreateSucess(chatHistory);
     }
@@ -301,7 +279,7 @@ public class SendMessageServiceImpl implements SendMessageService {
         try {
             ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chat);
             String body = user.getFirstName() + " " + user.getLastName() + ":" + chatHistoryOut.getQuest();
-            fireBaseUtil.pushFCMNotification("2", new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
+            fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_ASK_AGAIN, new Gson().toJson(chatHistoryOut), body, elderUser.getFireBaseToken());
             System.out.println("push success");
             return BasicData.CreateSucess(chat);
         } catch (IOException e) {

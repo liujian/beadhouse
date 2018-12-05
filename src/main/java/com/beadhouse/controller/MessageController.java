@@ -50,13 +50,8 @@ public class MessageController {
     @ResponseBody
     public BasicData sendMessage(SendMessageParam param, HttpServletRequest request) {
         if (param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), SendMessageParam.class);
-        //上传文件至aws
         MultipartFile file = UploadUtil.getFile(request);
-
-        String uploadFileName = null;
-        String fileText = null;
         File scratchFile = null;
-        File audioFile = null;
         if (file != null) {
             try {
                 String fileName = file.getOriginalFilename();
@@ -64,36 +59,12 @@ public class MessageController {
                 scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));
                 InputStream inputStream = file.getInputStream();
                 FileUtils.copyInputStreamToFile(inputStream, scratchFile);
-                //语音转文字
-                if (fileName.endsWith(".amr")) {
-                    fileText = GoogleSpeechUtil.translateAudio(scratchFile);
-                } else {
-                    String audioPath = ffMpegMusicUtil.videoToAudio(scratchFile.getPath(), UUID.randomUUID() + ".amr");
-                    audioFile = new File(audioPath);
-                    if (audioFile.exists()) {
-                        fileText = GoogleSpeechUtil.translateAudio(audioFile);
-                    }
-                }
-                logger.info("fileText-------" + fileText);
-                //上传文件至谷歌
-                logger.info("start google uploadFileToBucket");
-                uploadFileName = GoogleStorageUtil.uploadFile(file);
-                if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } finally {
-                logger.info("uploadFileName-------" + uploadFileName);
-                if (scratchFile != null && scratchFile.exists()) {
-                    scratchFile.delete();
-                }
-
-                if (audioFile != null && audioFile.exists()) {
-                    audioFile.delete();
-                }
             }
         }
-        return sendMessageService.sendMessage(param, uploadFileName, fileText);
+        return sendMessageService.sendMessage(param, scratchFile);
     }
 
     /**
@@ -164,12 +135,9 @@ public class MessageController {
     public BasicData answerQuestion(AnswerQuestParam param, HttpServletRequest request) {
         if (param.getToken() == null) param = new Gson().fromJson(request.getParameter("json"), AnswerQuestParam.class);
         System.out.println("token = " + param.getToken());
-        //上传文件至aws
+        //上传文件至后台
         MultipartFile file = UploadUtil.getFile(request);
-        String uploadFileName = null;
-        String fileText = null;
         File scratchFile = null;
-        File audioFile = null;
         if (file != null) {
             try {
                 String fileName = file.getOriginalFilename();
@@ -177,32 +145,13 @@ public class MessageController {
                 scratchFile = File.createTempFile("scratchFile", suffic, new File(prifix));
                 InputStream inputStream = file.getInputStream();
                 FileUtils.copyInputStreamToFile(inputStream, scratchFile);
-
-                if (fileName.endsWith(".amr")) {
-                    fileText = GoogleSpeechUtil.translateAudio(scratchFile);
-                } else {
-                    String audioPath = ffMpegMusicUtil.videoToAudio(scratchFile.getPath(), UUID.randomUUID() + ".amr");
-                    audioFile = new File(audioPath);
-                    if (audioFile.exists()) {
-                        fileText = GoogleSpeechUtil.translateAudio(audioFile);
-                        System.out.println(fileText);
-                    }
-                }
-                uploadFileName = GoogleStorageUtil.uploadFile(file);
-                if (uploadFileName == null) return BasicData.CreateErrorMsg("文件上传失败");
+                System.out.println("------" + scratchFile);
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-            } finally {
-                if (scratchFile != null && scratchFile.exists()) {
-                    scratchFile.delete();
-                }
-                if (audioFile != null && audioFile.exists()) {
-                    audioFile.delete();
-                }
             }
         }
-        return sendMessageService.answerQuestion(param, uploadFileName, fileText);
+        return sendMessageService.answerQuestion(param, scratchFile);
     }
 
 

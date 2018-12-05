@@ -218,7 +218,7 @@ public class UserServiceImpl implements UserService {
         if (elderUser.getFireBaseToken() != null) {
             try {
                 String body = user.getFirstName() + " " + user.getLastName() + " has been added to the contact list.";
-                fireBaseUtil.pushFCMNotification("4", new Gson().toJson(user), body, elderUser.getFireBaseToken());
+                fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_BIND_CONTACT, new Gson().toJson(user), body, elderUser.getFireBaseToken());
                 return BasicData.CreateSucess();
             } catch (IOException e) {
                 System.out.println("e = " + e);

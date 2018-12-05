@@ -2,11 +2,8 @@ package com.beadhouse.controller;
 
 import com.beadhouse.dao.UserMapper;
 import com.beadhouse.domen.User;
-import com.beadhouse.out.BasicData;
-import com.beadhouse.service.UserService;
 import com.beadhouse.utils.Constant;
 import com.beadhouse.utils.FireBaseUtil;
-import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -89,7 +86,7 @@ public class ScheduledController {
     private void sendPush(String fireBaseToken) {
         try {
             String body = "Please ask a question to love ones";
-            fireBaseUtil.pushFCMNotification("5", "", body, fireBaseToken);
+            fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_REMINDER, "", body, fireBaseToken);
         } catch (IOException e) {
             System.out.println("e = " + e);
         }

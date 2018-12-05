@@ -10,10 +10,10 @@ import com.beadhouse.dao.*;
 import com.beadhouse.domen.*;
 import com.beadhouse.in.*;
 import com.beadhouse.out.ScheduleOut;
+import com.beadhouse.utils.Constant;
 import com.beadhouse.utils.FireBaseUtil;
 import com.beadhouse.utils.TwilioUtil;
 import com.google.gson.Gson;
-import jdk.nashorn.internal.parser.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -333,7 +333,7 @@ public class ElderServiceImpl implements ElderService {
         if (loginUser != null && loginUser.getFireBaseToken() != null) {
             try {
                 String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + " wants you to ask a question";
-                fireBaseUtil.pushFCMNotification("1", new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
+                fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_TO_ASK_ME, new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
                 return BasicData.CreateSucess();
             } catch (IOException e) {
                 System.out.println("e = " + e);
