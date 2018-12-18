@@ -19,7 +19,9 @@ public interface MessageMapper {
 
     void updateAnswer(ChatHistory chatHistory);
 
-    void updatechat(ChatHistory chatHistory);
+    void updateMessageText(ChatHistory chatHistory);
+
+    void updateAnswerText(ChatHistory chatHistory);
 
     ChatHistory selectChatByChatid(Integer chatid);
 

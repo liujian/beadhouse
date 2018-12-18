@@ -1,11 +1,8 @@
 package com.beadhouse.utils;
 
-import com.google.cloud.storage.Acl;
+import com.google.cloud.storage.*;
 import com.google.cloud.storage.Acl.Role;
 import com.google.cloud.storage.Acl.User;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
 
 
 import org.joda.time.DateTime;
@@ -64,7 +61,7 @@ public class GoogleStorageUtil {
             storage.create(BlobInfo.newBuilder(bucketName, fileName)
                     // Modify access list to allow all users with link to read file
                     .setAcl(new ArrayList<>(Arrays.asList(Acl.of(User.ofAllUsers(), Role.READER))))
-                    .setContentType("video/mp4").build(), file.getInputStream());
+                    .setContentType("image/jpeg").build(), file.getInputStream());
         } catch (IOException e) {
             return null;
         }
@@ -79,21 +76,23 @@ public class GoogleStorageUtil {
      * @return 
      */
     @SuppressWarnings("deprecation")
-    public static String uploadFile(File file) {
+    public static BlobInfo uploadFile(File file) {
         String type = ".mp4";
         if (file.getName().endsWith(".amr")) type = ".amr";
         final String fileName = getFileName() + type;
         System.err.println("fileName:" + fileName);
-        //上传文件 BlobInfo blobInfo =
+        //上传文件 
+        BlobInfo blobInfo;
         try {
-            storage.create(BlobInfo.newBuilder(bucketName, fileName)
+            storage.create(blobInfo = BlobInfo.newBuilder(bucketName, fileName)
                     // Modify access list to allow all users with link to read file
                     .setAcl(new ArrayList<>(Arrays.asList(Acl.of(User.ofAllUsers(), Role.READER))))
-                    .setContentType("video/mp4").build(), new FileInputStream(file));
+                    .setContentType(type.equals(".mp4") ? "video/mp4" : "application/octet-stream").build(), new FileInputStream(file));
+//            storage.delete(blobInfo.getBlobId());
         } catch (IOException e) {
             return null;
         }
-        return fileName;
+        return blobInfo;
     }
 
     private static String getFileName() {
@@ -105,5 +104,9 @@ public class GoogleStorageUtil {
         }
         System.out.println(format);
         return format;
+    }
+
+    public static void deleteAudio(BlobInfo newBlobInfo) {
+        storage.delete(newBlobInfo.getBlobId());
     }
 }

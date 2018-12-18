@@ -116,7 +116,7 @@ public class FireBaseUtil {
         // [END use_access_token]
     }
 
-    public void pushFCMNotification(String type, String json, String body, String fireBaseToken) throws IOException {
+    public boolean pushFCMNotification(String type, String json, String body, String fireBaseToken) throws IOException {
         JsonObject fcmMessage = buildNotificationMessage(type, json, body, fireBaseToken);
         HttpURLConnection connection = getConnection();
         connection.setDoOutput(true);
@@ -130,10 +130,12 @@ public class FireBaseUtil {
             String response = inputstreamToString(connection.getInputStream());
             System.out.println("Message sent to Firebase for delivery, response:");
             System.out.println(response);
+            return true;
         } else {
             System.out.println("Unable to send message to Firebase:");
             String response = inputstreamToString(connection.getErrorStream());
             System.out.println(response);
+            return false;
         }
     }
 

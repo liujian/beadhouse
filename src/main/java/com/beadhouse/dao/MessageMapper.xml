@@ -182,12 +182,20 @@
         chatId=#{chatId}
   </update>
 
-    <update id="updatechat" parameterType="com.beadhouse.domen.ChatHistory">
+    <update id="updateMessageText" parameterType="com.beadhouse.domen.ChatHistory">
        UPDATE
         Table_chat_history
         SET
-        elderUserResponse=#{elderUserResponse},
         voicequest=#{voicequest}
+        where
+        chatId=#{chatId}
+  </update>
+
+    <update id="updateAnswerText" parameterType="com.beadhouse.domen.ChatHistory">
+       UPDATE
+        Table_chat_history
+        SET
+        elderUserResponse=#{elderUserResponse}
         where
         chatId=#{chatId}
   </update>

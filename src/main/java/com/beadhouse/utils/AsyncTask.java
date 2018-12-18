@@ -8,9 +8,8 @@ import com.beadhouse.domen.ElderUser;
 import com.beadhouse.domen.User;
 import com.beadhouse.in.AnswerQuestParam;
 import com.beadhouse.in.SendMessageParam;
-import com.beadhouse.out.BasicData;
 import com.beadhouse.out.ChatHistoryOut;
-import com.beadhouse.service.impl.SendMessageServiceImpl;
+import com.google.cloud.storage.BlobInfo;
 import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +43,7 @@ public class AsyncTask {
     @Async
     public void asyncToHandleSendMessage(SendMessageParam param, File file, User user, ChatHistory chatHistory) {
         if (file != null) {
-            translateAndUpload(file, chatHistory, true);
+            UploadAndTranslate(file, chatHistory, true);
         }
 
         ElderUser elderUser = elderUserMapper.selectById(param.getElderUserId());
@@ -61,7 +60,7 @@ public class AsyncTask {
     @Async
     public void asyncToHandleAnswerQuestion(AnswerQuestParam param, File file, ElderUser elderUser, ChatHistory chatHistory) {
         if (file != null) {
-            translateAndUpload(file, chatHistory, false);
+            UploadAndTranslate(file, chatHistory, false);
         }
         ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
         try {
@@ -72,33 +71,49 @@ public class AsyncTask {
         }
     }
 
-    private void translateAndUpload(File file, ChatHistory chatHistory, boolean isSend) {
+    private void UploadAndTranslate(File file, ChatHistory chatHistory, boolean isSend) {
         String uploadFileName = null;
         String fileText = null;
         File audioFile = null;
         try {
+            //上传文件至谷歌
+            logger.info("start google uploadFileToBucket");
+            BlobInfo blobInfo = GoogleStorageUtil.uploadFile(file);
+
+            uploadFileName = blobInfo.getName();
+
+            if (isSend) {
+                chatHistory.setUserVoiceUrl(SERVER_IMAGE + uploadFileName);
+                messageMapper.updateQuestion(chatHistory);
+            } else {
+                chatHistory.setElderUserVoiceUrl(SERVER_IMAGE + uploadFileName);
+                messageMapper.updateAnswer(chatHistory);
+            }
+
             //语音转文字
+
             String fileName = file.getName();
             if (fileName.endsWith(".amr")) {
-                fileText = GoogleSpeechUtil.translateAudio(file);
+                try {
+                    fileText = GoogleSpeechUtil.translateAudio("gs://rootz-media-bucket/" + uploadFileName);
+                } catch (Exception e) {
+                }
             } else {
                 String audioPath = ffMpegMusicUtil.videoToAudio(file.getPath(), UUID.randomUUID() + ".amr");
                 audioFile = new File(audioPath);
                 if (audioFile.exists()) {
-                    fileText = GoogleSpeechUtil.translateAudio(audioFile);
+                    BlobInfo newBlobInfo = GoogleStorageUtil.uploadFile(audioFile);
+                    fileText = GoogleSpeechUtil.translateAudio("gs://rootz-media-bucket/" + newBlobInfo.getName());
+                    GoogleStorageUtil.deleteAudio(newBlobInfo);
                 }
             }
             logger.info("fileText-------" + fileText);
-            //上传文件至谷歌
-            logger.info("start google uploadFileToBucket");
-            uploadFileName = GoogleStorageUtil.uploadFile(file);
+
             if (isSend) {
                 if (fileText != null) chatHistory.setVoicequest(fileText);
-                if (fileText != null) chatHistory.setUserVoiceUrl(SERVER_IMAGE + uploadFileName);
                 messageMapper.updateQuestion(chatHistory);
             } else {
                 if (fileText != null) chatHistory.setElderUserResponse(fileText);
-                if (fileText != null) chatHistory.setElderUserVoiceUrl(SERVER_IMAGE + uploadFileName);
                 messageMapper.updateAnswer(chatHistory);
             }
         } catch (Exception e) {

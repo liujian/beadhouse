@@ -1,5 +1,6 @@
 package com.beadhouse.utils;
 
+import com.google.api.gax.longrunning.OperationFuture;
 import com.google.cloud.speech.v1p1beta1.*;
 import com.google.cloud.speech.v1p1beta1.RecognitionConfig.AudioEncoding;
 import com.google.protobuf.ByteString;
@@ -16,9 +17,9 @@ public class GoogleSpeechUtil {
      * Demonstrates using the Speech API to transcribe an audio file.
      */
     public static void main(String... args) throws Exception {
-      String str = translateAudio(new File("D:\\scratchFile\\20181031102523041800.amr"));
-      
-      System.out.println("测试语音转文字："+str);
+        String str = translateAudio("gs://rootz-media-bucket/20181207033333006777.mp4");
+
+        System.out.println("测试语音转文字：" + str);
     }
 
     public static String translateAudio(File file) throws Exception {
@@ -61,4 +62,45 @@ public class GoogleSpeechUtil {
             return stringBuffer.toString();
         }
     }
+
+
+    public static String translateAudio(String gcsUri) throws Exception {
+        // Instantiates a client with GOOGLE_APPLICATION_CREDENTIALS
+        try (SpeechClient speech = SpeechClient.create()) {
+
+            // Configure remote file request for Linear16
+            RecognitionConfig config = RecognitionConfig.newBuilder()
+                    .setEncoding(AudioEncoding.AMR)
+                    .setSampleRateHertz(8000)
+                    .setLanguageCode("en-US")
+                    .setEnableAutomaticPunctuation(true)
+                    .build();
+            RecognitionAudio audio = RecognitionAudio.newBuilder()
+                    .setUri(gcsUri)
+                    .build();
+
+            // Use non-blocking call for getting file transcription
+            OperationFuture<LongRunningRecognizeResponse, LongRunningRecognizeMetadata> response =
+                    speech.longRunningRecognizeAsync(config, audio);
+            while (!response.isDone()) {
+                System.out.println("Waiting for response...");
+                Thread.sleep(10000);
+            }
+
+            List<SpeechRecognitionResult> results = response.get().getResultsList();
+            StringBuffer stringBuffer = new StringBuffer();
+            for (SpeechRecognitionResult result : results) {
+                // There can be several alternative transcripts for a given chunk of speech. Just use the
+                // first (most likely) one here.
+                List<SpeechRecognitionAlternative> speechList = result.getAlternativesList();
+                if (speechList != null && speechList.size() != 0) {
+                    SpeechRecognitionAlternative alternative = speechList.get(0);
+                    System.out.printf("Transcription: %s\n", alternative.getTranscript());
+                    stringBuffer.append(alternative.getTranscript());
+                }
+            }
+            return stringBuffer.toString();
+        }
+    }
+
 }

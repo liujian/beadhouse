@@ -226,7 +226,7 @@ public class SendMessageServiceImpl implements SendMessageService {
         chatHistory.setResponseDate(new Date());
         messageMapper.updateAnswer(chatHistory);
 
-        asyncTask.asyncToHandleAnswerQuestion(param,file,elderUser,chatHistory);
+        asyncTask.asyncToHandleAnswerQuestion(param, file, elderUser, chatHistory);
 
         return BasicData.CreateSucess(chatHistory);
     }
@@ -240,9 +240,15 @@ public class SendMessageServiceImpl implements SendMessageService {
         }
         ChatHistory chat = messageMapper.selectChatByChatid(param.getChatid());
         if (chat != null && chat.getElderUserId().equals(param.getElderUserId()) && chat.getLoginUserId().equals(user.getId())) {
-            chat.setVoicequest(param.getVoicequest());
-            chat.setElderUserResponse(param.getElderUserResponse());
-            messageMapper.updatechat(chat);
+            if (param.getType() == 1) {
+                chat.setVoicequest(param.getVoicequest());
+                messageMapper.updateMessageText(chat);
+            } else if (param.getType() == 2) {
+                chat.setElderUserResponse(param.getVoicequest());
+                messageMapper.updateAnswerText(chat);
+            } else {
+                return BasicData.CreateErrorMsg("type is error");
+            }
         } else {
             return BasicData.CreateErrorMsg("You can only change the chat between yourself and the elderly!");
         }
@@ -258,9 +264,18 @@ public class SendMessageServiceImpl implements SendMessageService {
         }
         ChatHistory chat = messageMapper.selectChatByChatid(param.getChatid());
         if (chat != null && chat.getElderUserId().equals(user.getElderUserId())) {
-            chat.setVoicequest(param.getVoicequest());
-            chat.setElderUserResponse(param.getElderUserResponse());
-            messageMapper.updatechat(chat);
+            switch (param.getType()) {
+                case 1:
+                    chat.setVoicequest(param.getVoicequest());
+                    messageMapper.updateMessageText(chat);
+                    break;
+                case 2:
+                    chat.setElderUserResponse(param.getVoicequest());
+                    messageMapper.updateAnswerText(chat);
+                    break;
+                default:
+                    return BasicData.CreateErrorMsg("type is error");
+            }
         } else {
             return BasicData.CreateErrorMsg("You can only modify your own chat history!");
         }

@@ -9,7 +9,7 @@ public class UpdateChatParam extends BasicIn {
 	
 	private String voicequest;
 	
-	private String elderUserResponse;
+	private int type;  // 1--问题翻译   2--回答翻译
 
 	public String getToken() {
 		return token;
@@ -43,14 +43,11 @@ public class UpdateChatParam extends BasicIn {
 		this.voicequest = voicequest;
 	}
 
-	public String getElderUserResponse() {
-		return elderUserResponse;
+	public int getType() {
+		return type;
 	}
 
-	public void setElderUserResponse(String elderUserResponse) {
-		this.elderUserResponse = elderUserResponse;
+	public void setType(int type) {
+		this.type = type;
 	}
-	
-	
-	
 }

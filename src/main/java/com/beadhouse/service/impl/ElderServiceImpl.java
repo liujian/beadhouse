@@ -47,6 +47,8 @@ public class ElderServiceImpl implements ElderService {
     private ImageMapper imageMapper;
     @Autowired
     private ScheduleMapper scheduleMapper;
+    @Autowired
+    private AdvertisingMapper advertisingMapper;
     @Resource
     private TwilioUtil twilioUtil;
     @Resource
@@ -333,8 +335,12 @@ public class ElderServiceImpl implements ElderService {
         if (loginUser != null && loginUser.getFireBaseToken() != null) {
             try {
                 String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + " wants you to ask a question";
-                fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_TO_ASK_ME, new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
-                return BasicData.CreateSucess();
+                boolean success = fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_TO_ASK_ME, new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
+                if (success) {
+                    return BasicData.CreateSucess();
+                } else {
+                    return BasicData.CreateErrorMsg("Send push fail");
+                }
             } catch (IOException e) {
                 System.out.println("e = " + e);
                 error = e.getMessage();
@@ -369,6 +375,7 @@ public class ElderServiceImpl implements ElderService {
             }
         }
         schedule.setImageList(imageList);
+        schedule.setAdvertisingList(advertisingMapper.selectAdvertising());
         return BasicData.CreateSucess(schedule);
     }
 }
