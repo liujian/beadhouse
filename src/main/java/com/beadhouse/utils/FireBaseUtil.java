@@ -92,7 +92,7 @@ public class FireBaseUtil {
     private String getAccessToken() throws IOException {
         SCOPES[0] = MESSAGING_SCOPE;
         GoogleCredential googleCredential = GoogleCredential
-                .fromStream(new FileInputStream("D:\\file\\family-217806-firebase-adminsdk-02g0j-066b629a66.json"))
+                .fromStream(new FileInputStream("D:\\file\\resolute-return-220406-firebase-adminsdk-afhi5-f2bcbfcfd5.json"))
                 .createScoped(Arrays.asList(SCOPES));
         googleCredential.refreshToken();
         return googleCredential.getAccessToken();

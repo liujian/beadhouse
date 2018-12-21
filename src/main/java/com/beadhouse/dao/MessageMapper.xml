@@ -120,7 +120,7 @@
         WHERE
         Table_chat_history.elderUserId = #{elderUserId,jdbcType=INTEGER}
         <if test="search != null and  search != ''">
-            <![CDATA[ and (Table_chat_history.quest like concat('%',#{search},'%') or Table_chat_history.elderUserResponse like concat('%',#{search},'%'))]]>
+            <![CDATA[ and (Table_chat_history.quest like concat('%',#{search},'%') or Table_chat_history.voicequest like concat('%',#{search},'%') or Table_chat_history.elderUserResponse like concat('%',#{search},'%'))]]>
         </if>
         <if test="isCollection==1">
             and Table_chat_history.chatid
@@ -148,7 +148,7 @@
         WHERE
         Table_chat_history.elderUserId = #{elderUserId,jdbcType=INTEGER}
         <if test="search != null and  search != ''">
-            <![CDATA[ and (Table_chat_history.quest like concat('%',#{search},'%') or Table_chat_history.elderUserResponse like concat('%',#{search},'%'))]]>
+            <![CDATA[ and (Table_chat_history.quest like concat('%',#{search},'%') or Table_chat_history.voicequest like concat('%',#{search},'%') or Table_chat_history.elderUserResponse like concat('%',#{search},'%'))]]>
         </if>
         <if test="isCollection==1">
             and Table_chat_history.chatid
