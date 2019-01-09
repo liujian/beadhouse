@@ -66,9 +66,11 @@ public class FireBaseUtil {
         JsonObject jNotification = new JsonObject();
         jNotification.addProperty("title", TITLE);
         jNotification.addProperty("body", body);
+
         JsonObject jData = new JsonObject();
         jData.addProperty("type", type);
         jData.addProperty("json", json);
+        jData.addProperty("sound", "default");
 
         JsonObject jMessage = new JsonObject();
         jMessage.add("notification", jNotification);
@@ -77,6 +79,7 @@ public class FireBaseUtil {
         jMessage.addProperty("token", fireBaseToken);
         JsonObject jFcm = new JsonObject();
         jFcm.add(MESSAGE_KEY, jMessage);
+
         prettyPrint(jFcm);
         return jFcm;
     }

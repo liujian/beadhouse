@@ -93,7 +93,16 @@
         token=#{token},
         fireBaseToken = #{fireBaseToken}
         where
-        elderUserEmail=#{elderUserEmail}
+        elderUserId=#{elderUserId}
+  </update>
+
+    <update id="elderLogout" parameterType="java.lang.Integer">
+    UPDATE
+    Table_elder_user
+    SET
+    fireBaseToken=''
+    where
+    elderUserId=#{elderUserId}
   </update>
 
     <update id="updatePassword" parameterType="com.beadhouse.domen.ElderUser">
@@ -102,7 +111,7 @@
         SET
         elderUserPassword=#{elderUserPassword}
         where
-        elderUserEmail=#{elderUserEmail}
+        token=#{token}
     </update>
 
     <update id="updateElderInfo" parameterType="com.beadhouse.domen.ElderUser">
@@ -114,7 +123,7 @@
         elderBirthday=#{elderBirthday},
         elderUserPhone=#{elderUserPhone}
         where
-        elderUserEmail=#{elderUserEmail}
+        token=#{token}
     </update>
 
     <update id="updateElderAvatar" parameterType="com.beadhouse.domen.ElderUser">
@@ -123,8 +132,6 @@
         SET
         elderAvatar=#{elderAvatar}
         where
-        elderUserEmail=#{elderUserEmail}
+        token=#{token}
     </update>
-
-
 </mapper>

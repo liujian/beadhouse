@@ -72,6 +72,22 @@ public class ElderController {
         return elderService.elderUserLogin(param);
     }
 
+    /**
+     * 老人登出
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     * @author liujian
+     * @Date 2018-09-25
+     */
+    @RequestMapping("elderLogout")
+    @ResponseBody
+    @Transactional
+    public BasicData elderLogout(@Valid @RequestBody TokenParam param) {
+        return elderService.elderLogout(param);
+    }
+
 
 
     /**
@@ -211,7 +227,7 @@ public class ElderController {
       @ResponseBody
       @Transactional
       public BasicData getwaitquests(@Valid @RequestBody TokenParam param, HttpServletRequest request){
-          return elderService.getwaitquests(param);
+          return elderService.getWaitQuests(param);
       }
 
 

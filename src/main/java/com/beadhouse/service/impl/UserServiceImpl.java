@@ -134,6 +134,13 @@ public class UserServiceImpl implements UserService {
         return BasicData.CreateSucess(user);
     }
 
+    public BasicData logout(TokenParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) return BasicData.CreateErrorInvalidUser();
+        userMapper.logout(user.getId());
+        return BasicData.CreateSucess();
+    }
+
     public BasicData loginGoogleOrFacebook(GoogleAndFacebookParam param) {
         if (param.getType() == 1) { //google
             if (param.getGoogleLoginId() == null || param.getGoogleLoginId().isEmpty()) {
@@ -384,6 +391,15 @@ public class UserServiceImpl implements UserService {
             return BasicData.CreateErrorMsg("Type is error");
         user.setNotifyType(param.getNotifyType());
         userMapper.updateNotifyType(user);
+        return BasicData.CreateSucess(user);
+    }
+
+    @Override
+    public BasicData setFireBaseToken(FireBaseTokenParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) return BasicData.CreateErrorInvalidUser();
+        user.setFireBaseToken(param.getFireBaseToken());
+        userMapper.updateFireBaseToken(user);
         return BasicData.CreateSucess(user);
     }
 }

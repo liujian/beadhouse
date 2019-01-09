@@ -6,10 +6,15 @@
         <result column="quest" jdbcType="VARCHAR" property="quest"/>
         <result column="sort" jdbcType="INTEGER" property="sort"/>
     </resultMap>
+    <resultMap id="recordQuestResultMap" type="com.beadhouse.domen.RecordQuest">
+        <result column="loginUserId" jdbcType="INTEGER" property="loginUserId"/>
+        <result column="elderUserId" jdbcType="INTEGER" property="elderUserId"/>
+        <result column="questId" jdbcType="INTEGER" property="questId"/>
+    </resultMap>
     <sql id="Base_Column_List">
     questId, quest, sort
   </sql>
-    <select id="getquestlist" parameterType="java.lang.String" resultMap="BaseResultMap">
+    <select id="getQuestList" parameterType="java.lang.String" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from Table_quest_list
@@ -48,5 +53,28 @@
       )
   </insert>
 
+    <insert id="insertRecordQuest" parameterType="com.beadhouse.domen.RecordQuest">
+      insert into
+        table_record_quest (
+          loginUserId,
+          elderUserId,
+          questId
+          )
+      values (
+      #{loginUserId,jdbcType=INTEGER},
+      #{elderUserId,jdbcType=INTEGER},
+      #{questId,jdbcType=INTEGER}
+      )
+      ON DUPLICATE KEY UPDATE
+                loginUserId=#{loginUserId,jdbcType=INTEGER},
+                elderUserId=#{elderUserId,jdbcType=INTEGER},
+                questId=#{questId,jdbcType=INTEGER}
+  </insert>
+
+    <select id="getRecordQuestList" parameterType="java.lang.Integer" resultMap="recordQuestResultMap">
+        select *
+        from table_record_quest
+        WHERE loginUserId = #{loginUserId,jdbcType=INTEGER} AND elderUserId = #{elderUserId,jdbcType=INTEGER}
+    </select>
 
 </mapper>

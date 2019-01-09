@@ -2,6 +2,7 @@ package com.beadhouse.controller;
 
 import com.beadhouse.dao.UserMapper;
 import com.beadhouse.domen.User;
+import com.beadhouse.utils.AsyncTask;
 import com.beadhouse.utils.Constant;
 import com.beadhouse.utils.FireBaseUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +25,8 @@ public class ScheduledController {
     private UserMapper userMapper;
     @Resource
     private FireBaseUtil fireBaseUtil;
+    @Resource
+    private AsyncTask asyncTask;
 
     @Scheduled(cron = "0 0 9 * * ?")
     public void pushDataScheduled() {
@@ -38,61 +41,11 @@ public class ScheduledController {
         calendar.set(Calendar.MILLISECOND, 0);
         long time = calendar.getTime().getTime();
         for (User user : userList) {
-            switch (user.getNotifyType()) {
-                case Constant.NOTIFY_TYPE_NEVER:
-                    break;
-                case Constant.NOTIFY_TYPE_ONE_DAY:
-                    if (time == user.getNotifyDate().getTime() || time - 24 * 60 * 60 * 1000 == user.getNotifyDate().getTime()) {
-                        if (user.getFireBaseToken() != null) {
-                            sendPush(user.getFireBaseToken());
-                            user.setNotifyDate(new Date());
-                            userMapper.updateNotifyDate(user);
-                        }
-                    }
-                    break;
-                case Constant.NOTIFY_TYPE_TWO_DAY:
-                    if (time - 2 * 24 * 60 * 60 * 1000 == user.getNotifyDate().getTime()) {
-                        if (user.getFireBaseToken() != null) {
-                            sendPush(user.getFireBaseToken());
-                            user.setNotifyDate(new Date());
-                            userMapper.updateNotifyDate(user);
-                        }
-                    }
-                    break;
-                case Constant.NOTIFY_TYPE_ONE_WEEK:
-                    if (time - 7 * 24 * 60 * 60 * 1000 == user.getNotifyDate().getTime()) {
-                        if (user.getFireBaseToken() != null) {
-                            sendPush(user.getFireBaseToken());
-                            user.setNotifyDate(new Date());
-                            userMapper.updateNotifyDate(user);
-                        }
-                    }
-                    break;
-                case Constant.NOTIFY_TYPE_SURPRISE:
-                    Random random = new Random();
-                    int num = random.nextInt(2);
-                    if (num == 1) {
-                        if (user.getFireBaseToken() != null) {
-                            sendPush(user.getFireBaseToken());
-                            user.setNotifyDate(new Date());
-                            userMapper.updateNotifyDate(user);
-                        }
-                    }
-                    break;
-            }
+            asyncTask.asyncToSendPush(user, time);
         }
     }
 
-    private void sendPush(String fireBaseToken) {
-        try {
-            String body = "Please ask a question to love ones";
-            fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_REMINDER, "", body, fireBaseToken);
-        } catch (IOException e) {
-            System.out.println("e = " + e);
-        }
-    }
-
-    public static void main(String args[]){
+    public static void main(String args[]) {
         new ScheduledController().pushDataScheduled();
     }
 }

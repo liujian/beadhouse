@@ -7,14 +7,15 @@ import com.beadhouse.out.BasicData;
 
 public interface UserService {
 
-	
-	/**
-	 * 忘记密码
-	 * @param param
-	 * @return
-	 * @throws Exception
-	 */
-	 BasicData forgetPassword(NewPasswordParam param);
+
+    /**
+     * 忘记密码
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData forgetPassword(NewPasswordParam param);
 
     /**
      * 用户登录
@@ -24,6 +25,15 @@ public interface UserService {
      * @throws Exception
      */
     BasicData login(LoginParam param);
+
+    /**
+     * 用户登出
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData logout(TokenParam param);
 
     /**
      * 用户登录 (Google 和 facebook)
@@ -36,13 +46,14 @@ public interface UserService {
 
 
     /**
-	 * 发送验证码
-	 * @param phone
-	 * @throws Exception
-	 */
-	boolean sendCode(GetCodeParam param,String code);
-    
-    
+     * 发送验证码
+     *
+     * @param phone
+     * @throws Exception
+     */
+    boolean sendCode(GetCodeParam param, String code);
+
+
     /**
      * 用户注册
      *
@@ -115,4 +126,12 @@ public interface UserService {
      * @throws Exception
      */
     BasicData setNotifyType(NotifyParam param);
+
+    /**
+     * 设置FireBaseToken
+     *
+     * @param param
+     * @return
+     */
+    BasicData setFireBaseToken(FireBaseTokenParam param);
 }

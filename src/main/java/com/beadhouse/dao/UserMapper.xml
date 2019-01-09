@@ -108,6 +108,15 @@
     emailAddress=#{emailAddress}
   </update>
 
+    <update id="logout" parameterType="java.lang.Integer">
+    UPDATE
+    Table_login_user
+    SET
+    fireBaseToken=''
+    where
+    id=#{userId}
+  </update>
+
     <update id="updateTokenByGoogleLoginId" parameterType="com.beadhouse.domen.User">
     UPDATE
     Table_login_user
@@ -174,6 +183,15 @@
         Table_login_user
         SET
         notifyDate=#{notifyDate}
+        where
+        token=#{token}
+  </update>
+
+    <update id="updateFireBaseToken" parameterType="com.beadhouse.domen.User">
+       UPDATE
+        Table_login_user
+        SET
+        fireBaseToken=#{fireBaseToken}
         where
         token=#{token}
   </update>

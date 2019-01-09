@@ -82,8 +82,23 @@ public class UserController {
     @ResponseBody
     @Transactional
     public BasicData userLogin(@Valid @RequestBody LoginParam param, HttpServletRequest request) {
-
         return userService.login(param);
+    }
+
+    /**
+     * 用户登出
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     * @author liujian
+     * @Date 2018-09-25
+     */
+    @RequestMapping("userLogout")
+    @ResponseBody
+    @Transactional
+    public BasicData userLogout(@Valid @RequestBody TokenParam param, HttpServletRequest request) {
+        return userService.logout(param);
     }
 
 
@@ -224,6 +239,19 @@ public class UserController {
             if (uploadFileName == null) return BasicData.CreateErrorMsg("File upload fail");
         }
         return userService.uploadElderScreen(param, uploadFileName);
+    }
+
+    /**
+     * 设置提醒
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("setFireBaseToken")
+    @ResponseBody
+    public BasicData setFireBaseToken(@RequestBody FireBaseTokenParam param, HttpServletRequest request) {
+        return userService.setFireBaseToken(param);
     }
 
     /**

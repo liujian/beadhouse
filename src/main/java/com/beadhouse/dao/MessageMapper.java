@@ -23,9 +23,9 @@ public interface MessageMapper {
 
     void updateAnswerText(ChatHistory chatHistory);
 
-    ChatHistory selectChatByChatid(Integer chatid);
+    ChatHistory selectChatByChatId(Integer chatId);
 
-    List<ChatHistoryOut> getwaitquests(ChatHistory chatHistory);
+    List<ChatHistoryOut> getWaitQuests(ChatHistory chatHistory);
 
     ChatHistoryOut getQuestById(ChatHistory chatHistory);
 }

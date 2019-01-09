@@ -89,7 +89,7 @@ public interface ElderService {
     /**
      * 获取老人等待回答的问题
      */
-    BasicData getwaitquests(TokenParam param);
+    BasicData getWaitQuests(TokenParam param);
 
     /**
      * 老人求问题
@@ -102,4 +102,10 @@ public interface ElderService {
      */
     BasicData getSchedule(TokenParam param);
 
+    /**
+     * 老人登出
+     * @param param
+     * @return
+     */
+    BasicData elderLogout(TokenParam param);
 }

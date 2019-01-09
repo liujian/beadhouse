@@ -10,9 +10,7 @@ import com.beadhouse.dao.CollectionMapper;
 import com.beadhouse.dao.ElderUserMapper;
 import com.beadhouse.dao.QuestMapper;
 import com.beadhouse.dao.UserMapper;
-import com.beadhouse.domen.DefineQuest;
-import com.beadhouse.domen.ElderUser;
-import com.beadhouse.domen.User;
+import com.beadhouse.domen.*;
 import com.beadhouse.in.*;
 import com.beadhouse.out.ChatHistoryOut;
 import com.beadhouse.out.ChatHistoryOutList;
@@ -28,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.beadhouse.dao.MessageMapper;
-import com.beadhouse.domen.ChatHistory;
 import com.beadhouse.out.BasicData;
 import com.beadhouse.service.SendMessageService;
 
@@ -68,7 +65,6 @@ public class SendMessageServiceImpl implements SendMessageService {
             return BasicData.CreateErrorInvalidUser();
         }
         // if (fileName == null) return BasicData.CreateErrorMsg("文件上传失败");
-
         ChatHistory chatHistory = new ChatHistory();
         chatHistory.setLoginUserId(user.getId());
         chatHistory.setElderUserId(param.getElderUserId());
@@ -225,7 +221,14 @@ public class SendMessageServiceImpl implements SendMessageService {
         chatHistory.setChatId(param.getChatId());
         chatHistory.setResponseDate(new Date());
         messageMapper.updateAnswer(chatHistory);
-
+        ChatHistory recordChatHistory = messageMapper.selectChatByChatId(param.getChatId());
+        if (recordChatHistory.getQuestId() != null) {
+            RecordQuest recordQuest = new RecordQuest();
+            recordQuest.setLoginUserId(recordChatHistory.getLoginUserId());
+            recordQuest.setElderUserId(recordChatHistory.getElderUserId());
+            recordQuest.setQuestId(recordChatHistory.getQuestId());
+            questMapper.insertRecordQuest(recordQuest);
+        }
         asyncTask.asyncToHandleAnswerQuestion(param, file, elderUser, chatHistory);
 
         return BasicData.CreateSucess(chatHistory);
@@ -238,7 +241,7 @@ public class SendMessageServiceImpl implements SendMessageService {
         if (user == null) {
             return BasicData.CreateErrorInvalidUser();
         }
-        ChatHistory chat = messageMapper.selectChatByChatid(param.getChatid());
+        ChatHistory chat = messageMapper.selectChatByChatId(param.getChatid());
         if (chat != null && chat.getElderUserId().equals(param.getElderUserId()) && chat.getLoginUserId().equals(user.getId())) {
             if (param.getType() == 1) {
                 chat.setVoicequest(param.getVoicequest());
@@ -262,7 +265,7 @@ public class SendMessageServiceImpl implements SendMessageService {
         if (user == null) {
             return BasicData.CreateErrorInvalidUser();
         }
-        ChatHistory chat = messageMapper.selectChatByChatid(param.getChatid());
+        ChatHistory chat = messageMapper.selectChatByChatId(param.getChatid());
         if (chat != null && chat.getElderUserId().equals(user.getElderUserId())) {
             switch (param.getType()) {
                 case 1:
@@ -289,7 +292,7 @@ public class SendMessageServiceImpl implements SendMessageService {
         if (user == null) {
             return BasicData.CreateErrorInvalidUser();
         }
-        ChatHistory chat = messageMapper.selectChatByChatid(param.getChatId());
+        ChatHistory chat = messageMapper.selectChatByChatId(param.getChatId());
         ElderUser elderUser = elderUserMapper.selectById(chat.getElderUserId());
         try {
             ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chat);

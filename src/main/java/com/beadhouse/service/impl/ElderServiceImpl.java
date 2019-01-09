@@ -132,6 +132,13 @@ public class ElderServiceImpl implements ElderService {
         return BasicData.CreateSucess(elderUser);
     }
 
+    public BasicData elderLogout(TokenParam param) {
+        ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+        if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+        elderUserMapper.elderLogout(elderUser.getElderUserId());
+        return BasicData.CreateSucess();
+    }
+
     @Override
     public BasicData forgetPassword(NewPasswordParam param) {
         if (param.getEmailAddress() == null || param.getEmailAddress().isEmpty()) {
@@ -315,13 +322,13 @@ public class ElderServiceImpl implements ElderService {
 
 
     @Override
-    public BasicData getwaitquests(TokenParam param) {
+    public BasicData getWaitQuests(TokenParam param) {
         String token = param.getToken();
         ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
         ChatHistory chatHistory = new ChatHistory();
         chatHistory.setElderUserId(elderUser.getElderUserId());
-        List<ChatHistoryOut> list = messageMapper.getwaitquests(chatHistory);
+        List<ChatHistoryOut> list = messageMapper.getWaitQuests(chatHistory);
         return BasicData.CreateSucess(list);
     }
 
@@ -332,7 +339,7 @@ public class ElderServiceImpl implements ElderService {
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
         User loginUser = userMapper.selectById(param.getLoginUserId());
         String error = "";
-        if (loginUser != null && loginUser.getFireBaseToken() != null) {
+        if (loginUser != null && loginUser.getFireBaseToken() != null && !loginUser.getFireBaseToken().isEmpty()) {
             try {
                 String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + " wants you to ask a question";
                 boolean success = fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_TO_ASK_ME, new Gson().toJson(elderUser), body, loginUser.getFireBaseToken());
@@ -345,6 +352,8 @@ public class ElderServiceImpl implements ElderService {
                 System.out.println("e = " + e);
                 error = e.getMessage();
             }
+        } else {
+            error = "Notification failed to be delivered. The user is not logged in.";
         }
         return BasicData.CreateErrorMsg(error);
     }

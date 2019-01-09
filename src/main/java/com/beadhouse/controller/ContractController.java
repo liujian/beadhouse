@@ -4,6 +4,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import com.beadhouse.in.DefineQuestParam;
+import com.beadhouse.in.QuestListParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -32,7 +33,7 @@ public class ContractController {
      @ResponseBody
      @Transactional
      public BasicData getContacts(@Valid @RequestBody ContactsParam param,HttpServletRequest request){
-     	return contractService.getcontacts(param);
+     	return contractService.getContacts(param);
       }
 	 
 	 /**
@@ -46,9 +47,9 @@ public class ContractController {
 	 @RequestMapping("getQuestList")
      @ResponseBody
      @Transactional
-     public BasicData getQuestList(@Valid @RequestBody ContactsParam param,HttpServletRequest request){
+     public BasicData getQuestList(@Valid @RequestBody QuestListParam param, HttpServletRequest request){
 		
-		 return contractService.getquestlist(param);
+		 return contractService.getQuestList(param);
 	 }
 
 	/**

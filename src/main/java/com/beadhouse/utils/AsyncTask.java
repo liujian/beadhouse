@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -131,5 +133,62 @@ public class AsyncTask {
         }
     }
 
+
+    @Async
+    public void asyncToSendPush(User user, long time) {
+        System.out.println("--------------------->" + user + "," + time + "," + user.getNotifyDate().getTime());
+        switch (user.getNotifyType()) {
+            case Constant.NOTIFY_TYPE_NEVER:
+                break;
+            case Constant.NOTIFY_TYPE_ONE_DAY:
+                if (time == user.getNotifyDate().getTime() || time >= user.getNotifyDate().getTime() + 24 * 60 * 60 * 1000) {
+                    if (user.getFireBaseToken() != null) {
+                        sendPush(user.getFireBaseToken());
+                        user.setNotifyDate(new Date());
+                        userMapper.updateNotifyDate(user);
+                    }
+                }
+                break;
+            case Constant.NOTIFY_TYPE_TWO_DAY:
+                if (time >= user.getNotifyDate().getTime() + 2 * 24 * 60 * 60 * 1000) {
+                    if (user.getFireBaseToken() != null) {
+                        sendPush(user.getFireBaseToken());
+                        user.setNotifyDate(new Date());
+                        userMapper.updateNotifyDate(user);
+                    }
+                }
+                break;
+            case Constant.NOTIFY_TYPE_ONE_WEEK:
+                if (time >= user.getNotifyDate().getTime() + 7 * 24 * 60 * 60 * 1000) {
+                    if (user.getFireBaseToken() != null) {
+                        sendPush(user.getFireBaseToken());
+                        user.setNotifyDate(new Date());
+                        userMapper.updateNotifyDate(user);
+                    }
+                }
+                break;
+            case Constant.NOTIFY_TYPE_SURPRISE:
+                Random random = new Random();
+                int num = random.nextInt(2);
+                if (num == 1) {
+                    if (user.getFireBaseToken() != null) {
+                        sendPush(user.getFireBaseToken());
+                        user.setNotifyDate(new Date());
+                        userMapper.updateNotifyDate(user);
+                    }
+                }
+                break;
+        }
+    }
+
+    private void sendPush(String fireBaseToken) {
+        System.out.println("--------------------->" + fireBaseToken);
+        try {
+            String body = "Please ask a question to love ones";
+            fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_REMINDER, "", body, fireBaseToken);
+        } catch (IOException e) {
+            System.out.println("e = " + e);
+        }
+    }
 
 }

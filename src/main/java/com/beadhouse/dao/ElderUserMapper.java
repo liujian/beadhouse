@@ -22,4 +22,6 @@ public interface ElderUserMapper {
     void updateElderInfo(ElderUser elderUser);
     
     void updateElderAvatar(ElderUser elderUser);
+
+    void elderLogout(int elderUserId);
 }

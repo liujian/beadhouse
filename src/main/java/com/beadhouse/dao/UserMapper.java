@@ -3,6 +3,7 @@ package com.beadhouse.dao;
 import org.apache.ibatis.annotations.Mapper;
 
 import com.beadhouse.domen.User;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public interface UserMapper {
     User selectById(int loginUserId);
     void insertUser(User user);
     void updateToken(User user);
+    void logout(int userId);
     void updateTokenByGoogleLoginId(User user);
     void updateTokenByFacebookLoginId(User user);
     void updatePassword(User user);
@@ -24,4 +26,5 @@ public interface UserMapper {
     void updateUserAvatar(User user);
     void updateNotifyType(User user);
     void updateNotifyDate(User user);
+    void updateFireBaseToken(User user);
 }

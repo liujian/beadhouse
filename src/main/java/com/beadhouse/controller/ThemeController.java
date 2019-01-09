@@ -25,4 +25,15 @@ public class ThemeController {
         return themeService.theme();
     }
 
+    /**
+     * 获取logo及主题色
+     * @param request
+     * @return
+     */
+    @RequestMapping("elder/getVersionCode")
+    @ResponseBody
+    public BasicData getVersionCode(HttpServletRequest request){
+        return themeService.getVersionCode();
+    }
+
 }

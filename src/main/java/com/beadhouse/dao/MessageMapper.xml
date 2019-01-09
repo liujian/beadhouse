@@ -57,7 +57,7 @@
 
     </resultMap>
 
-    <select id="selectChatByChatid" parameterType="Integer" resultMap="ResultMap">
+    <select id="selectChatByChatId" parameterType="Integer" resultMap="ResultMap">
         SELECT
             *      
               FROM
@@ -67,7 +67,7 @@
        
     </select>
 
-    <select id="getwaitquests" parameterType="com.beadhouse.domen.ChatHistory" resultMap="BaseResultMap">
+    <select id="getWaitQuests" parameterType="com.beadhouse.domen.ChatHistory" resultMap="BaseResultMap">
         SELECT
             *      
               FROM
@@ -157,7 +157,7 @@
         <if test="loginUserId !=null and loginUserId != 0">
             and Table_chat_history.loginUserId=#{loginUserId,jdbcType=INTEGER}
         </if>
-
+        AND Table_chat_history.responseDate IS TRUE
         ORDER BY Table_chat_history.chatId DESC
     </select>
 
