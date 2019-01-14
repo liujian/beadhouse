@@ -1,6 +1,7 @@
 package com.beadhouse.service.impl;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -49,6 +50,9 @@ public class ElderServiceImpl implements ElderService {
     private ScheduleMapper scheduleMapper;
     @Autowired
     private AdvertisingMapper advertisingMapper;
+    @Autowired
+    private ActivityviewMapper activityviewMapper;
+    
     @Resource
     private TwilioUtil twilioUtil;
     @Resource
@@ -394,4 +398,16 @@ public class ElderServiceImpl implements ElderService {
         schedule.setAdvertisingList(advertisingMapper.selectAdvertising());
         return BasicData.CreateSucess(schedule);
     }
+
+
+	@Override
+	public BasicData getSchedule1(TokenParam param) {
+		ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
+	    if (elderUser == null) return BasicData.CreateErrorInvalidUser();
+	     Date d = new Date();  
+	     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");  
+	     String activedate = sdf.format(d); 
+	     ActivityView ActivityView = activityviewMapper.getActivityviewByActiveDate(activedate);
+		return BasicData.CreateSucess(ActivityView);
+	}
 }

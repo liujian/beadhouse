@@ -101,7 +101,11 @@ public interface ElderService {
      * @return
      */
     BasicData getSchedule(TokenParam param);
-
+    /**
+     * 获取日程1
+     * @return
+     */
+    BasicData getSchedule1(TokenParam param);
     /**
      * 老人登出
      * @param param

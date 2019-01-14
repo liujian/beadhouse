@@ -12,6 +12,9 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Value("${Theme.logo}")
     private String logo;
     
+    @Value("${schedule.activity}")
+    private String activity;
+    
     @Value("${Advertising.backgroundPath}")
     private String backgroundPath;
     
@@ -19,6 +22,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/logo/**").addResourceLocations(logo);
         registry.addResourceHandler("/backgroundpath/**").addResourceLocations(backgroundPath);
+        registry.addResourceHandler("/schedule/**").addResourceLocations(activity);
         
     }
 }

@@ -256,5 +256,17 @@ public class ElderController {
     public BasicData getSchedule(@Valid @RequestBody TokenParam param, HttpServletRequest request){
         return elderService.getSchedule(param);
     }
+    
+
+    /**
+     * 获取日程1
+     * @param request
+     * @return
+     */
+    @RequestMapping("elder/getSchedule1")
+    @ResponseBody
+    public BasicData getSchedule1(@Valid @RequestBody TokenParam param, HttpServletRequest request){
+        return elderService.getSchedule1(param);
+    }
 
 }
