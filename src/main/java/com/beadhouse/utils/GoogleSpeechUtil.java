@@ -41,6 +41,7 @@ public class GoogleSpeechUtil {
                     .setSampleRateHertz(8000)
                     .setLanguageCode("en-US")
                     .setEnableAutomaticPunctuation(true)
+                    .setProfanityFilter(true)
                     .build();
             RecognitionAudio audio = RecognitionAudio.newBuilder()
 //                    .setContent(ByteString.copyFrom(byteMerger(data)))
@@ -74,6 +75,7 @@ public class GoogleSpeechUtil {
                     .setSampleRateHertz(8000)
                     .setLanguageCode("en-US")
                     .setEnableAutomaticPunctuation(true)
+                    .setProfanityFilter(true)
                     .build();
             RecognitionAudio audio = RecognitionAudio.newBuilder()
                     .setUri(gcsUri)

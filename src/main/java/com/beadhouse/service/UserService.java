@@ -119,6 +119,24 @@ public interface UserService {
     BasicData uploadElderScreen(TokenParam param, String filePath);
 
     /**
+     * 获取老人屏保
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData getElderScreenList(TokenParam param);
+
+    /**
+     * 删除屏保
+     *
+     * @param param
+     * @return
+     * @throws Exception
+     */
+    BasicData deleteElderScreen(ImageParam param);
+
+    /**
      * 设置提醒
      *
      * @param param

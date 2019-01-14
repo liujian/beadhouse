@@ -242,6 +242,32 @@ public class UserController {
     }
 
     /**
+     * 获取老人屏保
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("getElderScreenList")
+    @ResponseBody
+    public BasicData getElderScreenList(@RequestBody TokenParam param, HttpServletRequest request) {
+        return userService.getElderScreenList(param);
+    }
+
+    /**
+     * 获取老人屏保
+     * @param param
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @RequestMapping("deleteElderScreen")
+    @ResponseBody
+    public BasicData deleteElderScreen(@RequestBody ImageParam param, HttpServletRequest request) {
+        return userService.deleteElderScreen(param);
+    }
+
+    /**
      * 设置提醒
      * @param param
      * @param request

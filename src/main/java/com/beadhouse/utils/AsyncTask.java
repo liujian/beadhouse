@@ -65,8 +65,13 @@ public class AsyncTask {
             UploadAndTranslate(file, chatHistory, false);
         }
         ChatHistoryOut chatHistoryOut = messageMapper.getQuestById(chatHistory);
+        String fileType = "Watch";
+        if (chatHistoryOut.getElderUserVoiceUrl().endsWith(".amr")) {
+            fileType = "Listen";
+        }
         try {
-            String body = elderUser.getElderFirstName() + " " + elderUser.getElderLastName() + ":" + chatHistoryOut.getElderUserResponse();
+            String body = fileType + " : " + elderUser.getElderFirstName() + " " + elderUser.getElderLastName()
+                    + " answered your question about { " + chatHistoryOut.getQuest() + " }";
             fireBaseUtil.pushFCMNotification(Constant.PUSH_TYPE_ANSWER_QUESTION, new Gson().toJson(chatHistoryOut), body, userMapper.selectById(chatHistoryOut.getLoginUserId()).getFireBaseToken());
         } catch (IOException e) {
             System.out.println("e = " + e);
@@ -106,7 +111,7 @@ public class AsyncTask {
                 if (audioFile.exists()) {
                     BlobInfo newBlobInfo = GoogleStorageUtil.uploadFile(audioFile);
                     fileText = GoogleSpeechUtil.translateAudio("gs://rootz-media-bucket/" + newBlobInfo.getName());
-                    GoogleStorageUtil.deleteAudio(newBlobInfo);
+                    GoogleStorageUtil.deleteFile(newBlobInfo);
                 }
             }
             logger.info("fileText-------" + fileText);

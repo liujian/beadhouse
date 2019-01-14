@@ -19,6 +19,22 @@
       )
   </insert>
 
+    <delete id="deleteImage" parameterType="com.beadhouse.domen.Image">
+     delete from
+        Table_image
+         where
+          imageId = #{imageId,jdbcType=INTEGER}
+        AND
+          loginUserId = #{loginUserId,jdbcType=INTEGER}
+  </delete>
+
+    <select id="getImage" resultMap="BaseImageMap">
+     Select * from
+        Table_image
+         where
+          imageId = #{imageId,jdbcType=INTEGER}
+  </select>
+
     <select id="selectImageByLoginUserId" parameterType="Integer" resultMap="BaseImageMap">
     SELECT * FROM Table_image
     WHERE Table_image.loginUserId = #{loginUserId,jdbcType=INTEGER}

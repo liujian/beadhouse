@@ -19,14 +19,18 @@ public class TwilioUtil {
 //        sendMessage("", "");
     }
 
-    public void sendMessage(String phone, String body) {
+    public boolean sendMessage(String phone, String body) {
         System.out.println("TWILIO_COUNTRY = " + TWILIO_COUNTRY + ",ACCOUNT_SID = " + ACCOUNT_SID);
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
 
-        Message message = Message.creator(new PhoneNumber(TWILIO_COUNTRY + phone),
-                new PhoneNumber("+13852437755"), body).create();
-
-        System.out.println(message.getSid());
+        try {
+            Message message = Message.creator(new PhoneNumber(TWILIO_COUNTRY + phone),
+                    new PhoneNumber("+13852437755"), body).create();
+            System.out.println(message.getSid());
+            return true;
+        } catch (Exception e) {
+        }
+        return false;
     }
 
 

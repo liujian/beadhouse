@@ -16,6 +16,11 @@ public class Image implements Serializable {
 		this.loginUserId = loginUserId;
 	}
 
+	public Image(Integer imageId, int loginUserId) {
+		this.imageId = imageId;
+		this.loginUserId = loginUserId;
+	}
+
 	public Image(Integer imageId, String imageUrl, int loginUserId) {
 		this.imageId = imageId;
 		this.imageUrl = imageUrl;

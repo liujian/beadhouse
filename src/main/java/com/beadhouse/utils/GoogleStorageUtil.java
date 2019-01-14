@@ -106,7 +106,13 @@ public class GoogleStorageUtil {
         return format;
     }
 
-    public static void deleteAudio(BlobInfo newBlobInfo) {
+    public static void deleteFile(BlobInfo newBlobInfo) {
         storage.delete(newBlobInfo.getBlobId());
     }
+
+    public static void deleteFile(String name) {
+        BlobInfo blobInfo = BlobInfo.newBuilder(bucketName, name).build();
+        storage.delete(blobInfo.getBlobId());
+    }
+
 }

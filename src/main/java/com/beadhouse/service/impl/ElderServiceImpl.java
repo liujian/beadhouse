@@ -298,26 +298,33 @@ public class ElderServiceImpl implements ElderService {
         ElderUser elderUser = elderUserMapper.selectByToken(param.getToken());
         if (elderUser == null) return BasicData.CreateErrorInvalidUser();
         String username = elderUser.getElderFirstName() + " " + elderUser.getElderLastName();
-        String msg = username + " Elderly Invite you to bind his / her mailbox and bind code as " + param.getCode();
+        String msg = username + " has invited you to ask them questions about their life! Please enter this code {"
+                + param.getCode() + "} in your rootz.life app to connect to " + username;
+        boolean isSuccess = false;
         switch (param.getType()) {
             case 1:
-                //邮箱发送验证码
-                SimpleMailMessage message = new SimpleMailMessage();
-                message.setFrom(sender);
-                message.setTo(param.getEmailOrPhone()); //自己给自己发送邮件
-                message.setSubject("theme：Elderly homes, elderly binding code");
-                message.setText(msg);
-                System.out.println("Start sending mail！");
-                System.out.println("Mailbox content：" + msg);
-                mailSender.send(message);
-                System.out.println("Mail sent successfully！");
+                try {
+                    //邮箱发送验证码
+                    SimpleMailMessage message = new SimpleMailMessage();
+                    message.setFrom(sender);
+                    message.setTo(param.getEmailOrPhone()); //自己给自己发送邮件
+                    message.setSubject("Elder Connect");
+                    message.setText(msg);
+                    System.out.println("Start sending mail！");
+                    System.out.println("Mailbox content：" + msg);
+                    mailSender.send(message);
+                    System.out.println("Mail sent successfully！");
+                    isSuccess = true;
+                } catch (Exception e){
+                    isSuccess = false;
+                }
                 break;
             case 2:
-                twilioUtil.sendMessage(param.getEmailOrPhone(), msg);
+                isSuccess = twilioUtil.sendMessage(param.getEmailOrPhone(), msg);
                 break;
         }
-
-        return BasicData.CreateSucess();
+        if (isSuccess) return BasicData.CreateSucess();
+        else return BasicData.CreateErrorMsg("Send fail");
     }
 
 

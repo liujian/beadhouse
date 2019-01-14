@@ -3,6 +3,7 @@ package com.beadhouse.service.impl;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 import com.beadhouse.dao.ImageMapper;
 import com.beadhouse.domen.Image;
@@ -10,6 +11,7 @@ import com.beadhouse.in.*;
 import com.beadhouse.redis.RedisService;
 import com.beadhouse.utils.Constant;
 import com.beadhouse.utils.FireBaseUtil;
+import com.beadhouse.utils.GoogleStorageUtil;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -306,6 +308,28 @@ public class UserServiceImpl implements UserService {
         Image image = new Image(SERVER_IMAGE + fileName, user.getId());
         imageMapper.insertImage(image);
         return BasicData.CreateSucess(SERVER_IMAGE + fileName);
+    }
+
+    @Override
+    public BasicData getElderScreenList(TokenParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) return BasicData.CreateErrorInvalidUser();
+        List<Image> imageList = imageMapper.selectImageByLoginUserId(user.getId());
+        return BasicData.CreateSucess(imageList);
+    }
+
+    @Override
+    public BasicData deleteElderScreen(ImageParam param) {
+        User user = userMapper.selectByToken(param.getToken());
+        if (user == null) return BasicData.CreateErrorInvalidUser();
+        Image image = imageMapper.getImage(new Image(param.getImageId(), user.getId()));
+        try {
+            GoogleStorageUtil.deleteFile(image.getImageUrl().replace(SERVER_IMAGE, ""));
+        } catch (Exception e) {
+
+        }
+        imageMapper.deleteImage(image);
+        return BasicData.CreateSucess();
     }
 
     @Override

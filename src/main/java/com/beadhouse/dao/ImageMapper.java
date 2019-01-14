@@ -8,7 +8,11 @@ import java.util.List;
 @Mapper
 public interface ImageMapper {
 
-	void insertImage(Image image);
+    void insertImage(Image image);
 
-	List<Image> selectImageByLoginUserId(int loginUserId);
+    void deleteImage(Image image);
+
+    Image getImage(Image image);
+
+    List<Image> selectImageByLoginUserId(int loginUserId);
 }
